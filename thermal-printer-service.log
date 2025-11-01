@@ -1,0 +1,146 @@
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:14:01.175Z"}
+{"level":"error","message":"Failed to initialize printer:","timestamp":"2025-10-05T20:14:01.203Z"}
+{"level":"info","message":"Shutting down Thermal Printer Service...","timestamp":"2025-10-05T20:14:26.201Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:14:27.439Z"}
+{"level":"error","message":"Failed to initialize printer:","timestamp":"2025-10-05T20:14:27.477Z"}
+{"level":"error","message":"Failed to initialize printer:","timestamp":"2025-10-05T20:14:51.302Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:17:48.820Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:17:48.822Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:17:48.850Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:17:48.850Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:17:48.851Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:19:39.370Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:19:39.374Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:19:39.393Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:19:39.393Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:19:39.394Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:19:39.394Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:19:39.394Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:19:39.395Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:20:40.641Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:20:40.646Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:20:40.646Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:20:40.647Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:20:40.647Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:20:40.647Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:20:40.647Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:25:10.370Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:27:28.632Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:27:28.635Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:27:28.661Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:27:28.662Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:27:28.662Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:27:28.662Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:27:28.662Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:27:28.662Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:28:15.426Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:28:15.429Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:28:15.457Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:28:15.457Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:28:15.457Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:28:15.457Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:28:15.457Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:28:15.457Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:29:23.144Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:29:23.148Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:29:23.148Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:29:23.151Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:29:23.152Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:29:23.152Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:29:23.152Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:30:24.640Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:30:24.643Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:30:24.643Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:30:24.647Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:30:24.648Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:30:24.648Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:30:24.649Z"}
+{"level":"info","message":"Attempting to initialize thermal printer...","timestamp":"2025-10-05T20:31:26.995Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:31:27.002Z"}
+{"level":"info","manufacturer":1,"message":"Device 0:","product":2,"productId":1803,"timestamp":"2025-10-05T20:31:27.003Z","vendorId":1155}
+{"level":"error","message":"Failed to connect to printer device:","timestamp":"2025-10-05T20:31:27.007Z"}
+{"level":"error","message":"This is likely a USB permissions issue on macOS","timestamp":"2025-10-05T20:31:27.007Z"}
+{"level":"info","message":"Try running: sudo npm start","timestamp":"2025-10-05T20:31:27.008Z"}
+{"level":"info","message":"Or use the Web Serial API fallback in the browser","timestamp":"2025-10-05T20:31:27.008Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:37:08.560Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:37:08.578Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:37:08.631Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:37:08.631Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:37:08.667Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:37:08.668Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:37:08.744Z"}
+{"level":"info","message":"Received shift closure print request","shiftId":0,"timestamp":"2025-10-05T20:44:15.220Z"}
+{"level":"error","message":"Print error: Cannot read properties of null (reading 'on')","stack":"TypeError: Cannot read properties of null (reading 'on')\n    at Network.open (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/escpos-network/index.js:28:15)\n    at res.json.success (/Users/jamshid/projects/stock-control/thermal-printer-service/server.js:378:21)\n    at new Promise (<anonymous>)\n    at /Users/jamshid/projects/stock-control/thermal-printer-service/server.js:377:11\n    at Layer.handle [as handle_request] (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/express/lib/router/route.js:119:3)\n    at Layer.handle [as handle_request] (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/express/lib/router/layer.js:95:5)\n    at /Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/express/lib/router/index.js:284:15\n    at Function.process_params (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/express/lib/router/index.js:346:12)","timestamp":"2025-10-05T20:44:15.286Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:45:33.196Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:45:33.203Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:45:33.224Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:45:33.224Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:45:33.224Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:45:33.224Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:45:33.278Z"}
+{"level":"info","message":"Received shift closure print request","shiftId":0,"timestamp":"2025-10-05T20:46:05.585Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:46:05.588Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:46:05.589Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:46:05.590Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:46:05.591Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:46:05.591Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:46:05.634Z"}
+{"level":"error","message":"Print error: Cannot read properties of null (reading 'on')","stack":"TypeError: Cannot read properties of null (reading 'on')\n    at Network.open (/Users/jamshid/projects/stock-control/thermal-printer-service/node_modules/escpos-network/index.js:28:15)\n    at res.json.success (/Users/jamshid/projects/stock-control/thermal-printer-service/server.js:382:21)\n    at new Promise (<anonymous>)\n    at /Users/jamshid/projects/stock-control/thermal-printer-service/server.js:381:11","timestamp":"2025-10-05T20:46:05.692Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:47:10.904Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:47:10.920Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:47:11.010Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:47:11.011Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:47:11.013Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:47:11.014Z"}
+{"level":"info","message":"❌ Network printer not found at 192.168.1.100: Network is not a constructor","timestamp":"2025-10-05T20:47:11.014Z"}
+{"level":"info","message":"❌ Network printer not found at 192.168.0.100: Network is not a constructor","timestamp":"2025-10-05T20:47:11.014Z"}
+{"level":"info","message":"❌ Network printer not found at 10.0.0.100: Network is not a constructor","timestamp":"2025-10-05T20:47:11.014Z"}
+{"level":"warn","message":"⚠️ H58S thermal printer not found","timestamp":"2025-10-05T20:47:11.014Z"}
+{"level":"info","message":"💡 For macOS automatic printing, run: sudo node server.js","timestamp":"2025-10-05T20:47:11.014Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:48:46.967Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:48:46.978Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:48:47.016Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:48:47.017Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:48:47.017Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:48:47.017Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:48:47.067Z"}
+{"level":"info","message":"Received shift closure print request","shiftId":0,"timestamp":"2025-10-05T20:49:30.354Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:49:30.355Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:49:30.356Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:49:30.358Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:49:30.365Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:49:30.366Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:49:30.415Z"}
+{"level":"info","message":"Shift closure receipt printed successfully","timestamp":"2025-10-05T20:49:30.519Z"}
+{"level":"info","message":"Received shift closure print request","shiftId":0,"timestamp":"2025-10-05T20:49:55.526Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:49:55.527Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:49:55.528Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:49:55.529Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:49:55.530Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:49:55.530Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:49:55.573Z"}
+{"level":"info","message":"Shift closure receipt printed successfully","timestamp":"2025-10-05T20:49:55.613Z"}
+{"level":"info","message":"Received shift closure print request","shiftId":0,"timestamp":"2025-10-05T20:51:11.267Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:51:11.269Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:51:11.273Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:51:11.276Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:51:11.277Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:51:11.278Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:51:11.331Z"}
+{"level":"info","message":"Shift closure receipt printed successfully","timestamp":"2025-10-05T20:51:11.389Z"}
+{"level":"info","message":"Thermal Printer Service running on port 3001","timestamp":"2025-10-05T20:51:43.927Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:51:43.932Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:51:43.952Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:51:43.952Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:51:43.953Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:51:43.954Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:51:44.011Z"}
+{"level":"info","message":"Received shift closure print request","shiftId":0,"timestamp":"2025-10-05T20:52:21.056Z"}
+{"level":"info","message":"🔍 Initializing STMicroelectronics H58S thermal printer...","timestamp":"2025-10-05T20:52:21.056Z"}
+{"level":"warn","message":"❌ Direct USB connection failed: usb.on is not a function","timestamp":"2025-10-05T20:52:21.057Z"}
+{"level":"info","message":"Found 1 USB printer devices","timestamp":"2025-10-05T20:52:21.057Z"}
+{"level":"warn","message":"USB fallback failed:","timestamp":"2025-10-05T20:52:21.057Z"}
+{"level":"info","message":"🌐 USB connection failed, trying network printers...","timestamp":"2025-10-05T20:52:21.058Z"}
+{"level":"info","message":"✅ Connected to network printer at 192.168.1.100:9100","timestamp":"2025-10-05T20:52:21.107Z"}
+{"level":"info","message":"Shift closure receipt printed successfully with test markers","timestamp":"2025-10-05T20:52:21.230Z"}
+{"level":"info","message":"Shutting down Thermal Printer Service...","timestamp":"2025-10-05T21:13:09.900Z"}

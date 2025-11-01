@@ -1,0 +1,32 @@
+{
+  "name": "thermal-print-service",
+  "version": "1.0.0",
+  "description": "A local Node.js service to handle silent thermal printing for shift closure receipts",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "install-service": "node install-service.js",
+    "uninstall-service": "node uninstall-service.js",
+    "install-macos-service": "node install-macos-service.js",
+    "uninstall-macos-service": "node uninstall-macos-service.js"
+  },
+  "keywords": [
+    "thermal",
+    "printer",
+    "escpos",
+    "pos",
+    "receipt",
+    "H58S"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-thermal-printer": "^4.4.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

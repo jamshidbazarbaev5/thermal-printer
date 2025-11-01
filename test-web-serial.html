@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermal Printer Service Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .test-section {
+            margin: 25px 0;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        pre {
+            background: #f1f3f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖨️ Thermal Printer Service Test</h1>
+        
+        <div class="endpoint-info">
+            <strong>Service URL:</strong> http://localhost:3001<br>
+            <strong>Printer Model:</strong> H-58C Thermal Printer (58mm)<br>
+            <strong>Commands:</strong> ESC/POS
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Service Health Check</h3>
+            <p>Check if the thermal printer service is running and the printer is ready.</p>
+            <button onclick="checkHealth()">Check Service Health</button>
+            <div id="healthStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Print</h3>
+            <p>Print a test receipt to verify printer functionality.</p>
+            <button onclick="testPrint()">Print Test Receipt</button>
+            <div id="testStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📄 Shift Closure Print Test</h3>
+            <p>Test printing with sample shift closure data.</p>
+            <button onclick="testShiftClosure()">Print Sample Shift Closure</button>
+            <div id="shiftStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Service Logs</h3>
+            <div id="logs"></div>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+    </div>
+
+    <script>
+        const SERVICE_URL = 'http://localhost:3001';
+        let logs = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push({ timestamp, message, type });
+            updateLogsDisplay();
+        }
+
+        function updateLogsDisplay() {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerHTML = logs.map(log => 
+                `<div class="status ${log.type}">[${log.timestamp}] ${log.message}</div>`
+            ).join('');
+        }
+
+        function clearLogs() {
+            logs = [];
+            updateLogsDisplay();
+        }
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).innerHTML = '<div class="loading"></div>Loading...';
+        }
+
+        function showStatus(elementId, message, type) {
+            document.getElementById(elementId).innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        async function checkHealth() {
+            showLoading('healthStatus');
+            addLog('Checking service health...', 'info');
+            
+            try {
+                const response = await fetch(`${SERVICE_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const printerStatus = data.printer_ready ? '✅ Ready' : '❌ Not Ready';
+                    const message = `Service Status: ${data.status}<br>Printer Status: ${printerStatus}<br>Timestamp: ${data.timestamp}`;
+                    showStatus('healthStatus', message, data.printer_ready ? 'success' : 'warning');
+                    addLog(`Health check successful - Printer: ${printerStatus}`, data.printer_ready ? 'success' : 'warning');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                const message = `❌ Service unavailable: ${error.message}`;
+                showStatus('healthStatus', message, 'error');
+                addLog(`Health check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPrint() {
+            showLoading('testStatus');
+            addLog('Sending test print request...', 'info');
+            
+            try {
+                const response = await fetch(`${SERVICE_URL}/test-print`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('testStatus', `✅ ${data.message}`, 'success');
+                    addLog('Test print successful', 'success');
+                } else {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                const message = `❌ Test print failed: ${error.message}`;
+                showStatus('testStatus', message, 'error');
+                addLog(`Test print failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testShiftClosure() {
+            showLoading('shiftStatus');
+            addLog('Sending shift closure print request...', 'info');
+            
+            // Sample shift closure data
+            const sampleData = {
+                id: 18,
+                store: {
+                    id: 1,
+                    name: "GLAV",
+                    address: "ADDRESSS_1",
+                    phone_number: "975000502",
+                    budget: "200000.00",
+                    created_at: "2025-09-25T11:38:41.692721Z",
+                    is_main: true,
+                    color: "",
+                    parent_store: null
+                },
+                register: {
+                    id: 1,
+                    store: {
+                        id: 1,
+                        name: "GLAV",
+                        address: "ADDRESSS_1",
+                        phone_number: "975000502",
+                        budget: "200000.00",
+                        created_at: "2025-09-25T11:38:41.692721Z",
+                        is_main: true,
+                        color: "",
+                        parent_store: null
+                    },
+                    name: "Main Registerr",
+                    is_active: true,
+                    last_opened_at: null,
+                    last_closing_cash: 0.0
+                },
+                cashier: {
+                    id: 2,
+                    name: "root",
+                    phone_number: "+998911234567",
+                    role: ""
+                },
+                total_expected: "100000.00",
+                total_actual: "100000.00",
+                opened_at: "2025-10-05T18:30:06.111936Z",
+                closed_at: "2025-10-05T18:30:12.317889Z",
+                opening_cash: "100000.00",
+                closing_cash: "0.00",
+                opening_comment: "test\n",
+                closing_comment: "",
+                approval_comment: null,
+                is_active: false,
+                is_awaiting_approval: true,
+                is_approved: false,
+                approved_by: null,
+                payments: [
+                    {
+                        id: 65,
+                        payment_method: "Наличные",
+                        income: "0.00",
+                        expense: "0.00",
+                        expected: "100000.00",
+                        actual: "100000.00"
+                    },
+                    {
+                        id: 66,
+                        payment_method: "Карта",
+                        income: "0.00",
+                        expense: "0.00",
+                        expected: "0.00",
+                        actual: "0.00"
+                    },
+                    {
+                        id: 67,
+                        payment_method: "Click",
+                        income: "0.00",
+                        expense: "0.00",
+                        expected: "0.00",
+                        actual: "0.00"
+                    },
+                    {
+                        id: 68,
+                        payment_method: "Перечисление",
+                        income: "0.00",
+                        expense: "0.00",
+                        expected: "0.00",
+                        actual: "0.00"
+                    }
+                ]
+            };
+            
+            try {
+                const response = await fetch(`${SERVICE_URL}/print-shift-closure`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(sampleData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showStatus('shiftStatus', `✅ ${data.message}<br>Shift ID: ${data.shift_id}`, 'success');
+                    addLog(`Shift closure print successful - Shift ID: ${data.shift_id}`, 'success');
+                } else {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                const message = `❌ Shift closure print failed: ${error.message}`;
+                showStatus('shiftStatus', message, 'error');
+                addLog(`Shift closure print failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check health on page load
+        window.onload = function() {
+            addLog('Page loaded, checking service health...', 'info');
+            checkHealth();
+        };
+    </script>
+</body>
+</html>
