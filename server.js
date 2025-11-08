@@ -179,53 +179,102 @@ async function printUsingSystemPrinter(content) {
         }
       }
       
-      // Create a PowerShell script that uses .NET to send raw data to printer
+      // Create a PowerShell script that sends raw data directly to printer
       const psScriptPath = path.join(tempDir, 'print_thermal.ps1');
       const psScript = `
-# POS-compatible printing script with better error handling
-Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.Printing
-
+# Raw printing for thermal POS printers
 $printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
 $tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
 
+Add-Type -TypeDefinition @"
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+
+public class RawPrinterHelper
+{
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public class DOCINFOA
+    {
+        [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
+        [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
+        [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
+    }
+
+    [DllImport("winspool.Drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool OpenPrinter([MarshalAs(UnmanagedType.LPStr)] string szPrinter, out IntPtr hPrinter, IntPtr pd);
+
+    [DllImport("winspool.Drv", EntryPoint = "ClosePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool ClosePrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "StartDocPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool StartDocPrinter(IntPtr hPrinter, Int32 level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
+
+    [DllImport("winspool.Drv", EntryPoint = "EndDocPrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool EndDocPrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "StartPagePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool StartPagePrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "EndPagePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool EndPagePrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "WritePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBytes, Int32 dwCount, out Int32 dwWritten);
+
+    public static bool SendBytesToPrinter(string szPrinterName, IntPtr pBytes, Int32 dwCount)
+    {
+        IntPtr hPrinter = IntPtr.Zero;
+        DOCINFOA di = new DOCINFOA();
+        bool bSuccess = false;
+
+        di.pDocName = "Thermal Receipt";
+        di.pDataType = "RAW";
+
+        if (OpenPrinter(szPrinterName, out hPrinter, IntPtr.Zero))
+        {
+            if (StartDocPrinter(hPrinter, 1, di))
+            {
+                if (StartPagePrinter(hPrinter))
+                {
+                    int dwWritten = 0;
+                    bSuccess = WritePrinter(hPrinter, pBytes, dwCount, out dwWritten);
+                    EndPagePrinter(hPrinter);
+                }
+                EndDocPrinter(hPrinter);
+            }
+            ClosePrinter(hPrinter);
+        }
+
+        return bSuccess;
+    }
+
+    public static bool SendStringToPrinter(string szPrinterName, string szString)
+    {
+        IntPtr pBytes;
+        Int32 dwCount;
+        dwCount = szString.Length;
+        pBytes = Marshal.StringToCoTaskMemAnsi(szString);
+        bool result = SendBytesToPrinter(szPrinterName, pBytes, dwCount);
+        Marshal.FreeCoTaskMem(pBytes);
+        return result;
+    }
+}
+"@
+
 try {
-    # Read content using ASCII-safe path
+    # Read content
     $content = [System.IO.File]::ReadAllText($tempFilePath, [System.Text.Encoding]::UTF8)
     
     if ($printerName) {
-        # Check if printer accepts jobs
-        $printer = Get-Printer -Name $printerName -ErrorAction Stop
+        # Send raw data to printer
+        $success = [RawPrinterHelper]::SendStringToPrinter($printerName, $content)
         
-        # Create print document
-        $printDoc = New-Object System.Drawing.Printing.PrintDocument
-        $printDoc.PrinterSettings.PrinterName = $printerName
-        
-        # Verify printer is valid
-        if (-not $printDoc.PrinterSettings.IsValid) {
-            throw "Printer '$printerName' is not available or not accepting jobs"
+        if ($success) {
+            Write-Host "✓ Printed to $printerName using raw method"
+        } else {
+            throw "Failed to send data to printer"
         }
-        
-        # Set up print page handler
-        $printPage = {
-            param($sender, $ev)
-            try {
-                $font = New-Object System.Drawing.Font("Courier New", 8)
-                $brush = [System.Drawing.Brushes]::Black
-                $leftMargin = 10
-                $topMargin = 10
-                $ev.Graphics.DrawString($content, $font, $brush, $leftMargin, $topMargin)
-                $ev.HasMorePages = $false
-            } catch {
-                Write-Error "DrawString failed: $($_.Exception.Message)"
-            }
-        }
-        
-        $printDoc.add_PrintPage($printPage)
-        
-        # Print
-        $printDoc.Print()
-        Write-Host "✓ Printed to $printerName"
     } else {
         throw "No printer specified"
     }
@@ -237,30 +286,35 @@ try {
       
       fs.writeFileSync(psScriptPath, psScript, { encoding: 'utf8' });
       
-      // Try the primary method with fallback for POS systems
+      // Try the raw printing method with fallback
       try {
         command = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`;
         execSync(command, { encoding: 'utf8', stdio: 'pipe' });
-        console.log('✅ Printed successfully using .NET method');
+        console.log('✅ Printed successfully using raw printer method');
       } catch (printError) {
-        console.log('⚠️  .NET printing failed, trying POS-compatible method...');
+        console.log('⚠️  Raw printing failed, trying copy-to-printer method...');
         console.log('   Error:', printError.message);
         
-        // Fallback: Use notepad silent print (works on most POS systems)
+        // Fallback: Use copy command to send directly to printer port
         try {
-          // Use notepad /p with silent printing
-          const notePadCommand = `cmd /c notepad /p "${tempFile}"`;
-          
-          // Alternative: Direct printer output for POS thermal printers
-          const posScript = `
+          // Try to copy file directly to printer using copy command
+          const copyScript = `
 $printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
-$content = Get-Content "${tempFile.replace(/\\/g, '\\\\')}" -Raw
+$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
 
 if ($printerName) {
-    # Try using Out-Printer cmdlet (simpler, more compatible)
     try {
-        $content | Out-Printer -Name $printerName
-        Write-Host "Printed using Out-Printer"
+        # Method 1: Try using copy command to printer
+        $printerPort = (Get-Printer -Name $printerName).PortName
+        if ($printerPort -and $printerPort -like "USB*") {
+            # For USB printers, try direct copy
+            cmd /c copy /b "$tempFilePath" "\\\\localhost\\$printerName"
+            Write-Host "Printed using direct copy method"
+        } else {
+            # Method 2: Use Out-Printer as fallback
+            Get-Content "$tempFilePath" -Raw | Out-Printer -Name $printerName
+            Write-Host "Printed using Out-Printer method"
+        }
     } catch {
         Write-Error $_.Exception.Message
         exit 1
@@ -270,14 +324,14 @@ if ($printerName) {
     exit 1
 }
 `;
-          const posPrintPath = path.join(tempDir, 'pos_print.ps1');
-          fs.writeFileSync(posPrintPath, posScript, { encoding: 'utf8' });
+          const copyPrintPath = path.join(tempDir, 'copy_print.ps1');
+          fs.writeFileSync(copyPrintPath, copyScript, { encoding: 'utf8' });
           
-          execSync(`powershell -ExecutionPolicy Bypass -File "${posPrintPath}"`, { encoding: 'utf8', stdio: 'pipe' });
-          console.log('✅ Printed successfully using POS-compatible method');
-          fs.unlinkSync(posPrintPath);
+          execSync(`powershell -ExecutionPolicy Bypass -File "${copyPrintPath}"`, { encoding: 'utf8', stdio: 'pipe' });
+          console.log('✅ Printed successfully using copy-to-printer method');
+          fs.unlinkSync(copyPrintPath);
         } catch (fallbackError) {
-          console.error('❌ POS-compatible method also failed:', fallbackError.message);
+          console.error('❌ Copy-to-printer method also failed:', fallbackError.message);
           throw printError; // Throw original error
         }
       }
