@@ -1368,7 +1368,7 @@ const POSInterfaceCore = () => {
       className={`flex h-screen bg-gray-50 ${isFullscreenMode ? "overflow-hidden" : ""}`}
     >
       {/* Left Panel */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col bg-white min-w-0">
         {/* Session Tabs */}
         <div className="bg-white px-6 pt-4 border-b border-gray-200">
           <div
@@ -2025,7 +2025,7 @@ const POSInterfaceCore = () => {
 
       {/* Right Panel - Calculator */}
       {isCalculatorVisible && (
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-full">
+        <div className="w-96 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col h-full">
           {/* Calculator Display */}
           <div className="p-4 border-b border-gray-200 flex-shrink-0">
             {/* Calculator Header with Close Button */}
