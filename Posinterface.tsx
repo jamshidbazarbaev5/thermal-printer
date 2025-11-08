@@ -3292,7 +3292,7 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Payment Method Buttons */}
-            <div className="flex gap-3 mb-4">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               <button
                 onClick={() => {
                   if (onCredit) return; // Disable when in credit mode
@@ -3315,7 +3315,7 @@ const POSInterfaceCore = () => {
                   }
                 }}
                 disabled={onCredit}
-                className={`flex-1 border-2 rounded-xl p-4 flex items-center justify-center gap-3 transition-colors ${
+                className={`border-2 rounded-xl p-3 flex items-center justify-center gap-2 transition-colors ${
                   onCredit 
                     ? "bg-gray-300 border-gray-400 cursor-not-allowed opacity-50" 
                     : "bg-gray-100 hover:bg-gray-200 border-gray-300"
@@ -3362,7 +3362,7 @@ const POSInterfaceCore = () => {
                   }
                 }}
                 disabled={onCredit}
-                className={`flex-1 border-2 rounded-xl p-4 flex items-center justify-center gap-3 transition-colors ${
+                className={`border-2 rounded-xl p-3 flex items-center justify-center gap-2 transition-colors ${
                   onCredit 
                     ? "bg-gray-300 border-gray-400 cursor-not-allowed opacity-50" 
                     : "bg-gray-100 hover:bg-gray-200 border-gray-300"
@@ -3409,7 +3409,7 @@ const POSInterfaceCore = () => {
                   }
                 }}
                 disabled={onCredit}
-                className={`flex-1 border-2 rounded-xl p-4 flex items-center justify-center gap-3 transition-colors ${
+                className={`border-2 rounded-xl p-3 flex items-center justify-center gap-2 transition-colors ${
                   onCredit 
                     ? "bg-gray-300 border-gray-400 cursor-not-allowed opacity-50" 
                     : "bg-gray-100 hover:bg-gray-200 border-gray-300"
@@ -3456,7 +3456,7 @@ const POSInterfaceCore = () => {
                   }
                 }}
                 disabled={onCredit}
-                className={`flex-1 border-2 rounded-xl p-4 flex items-center justify-center gap-3 transition-colors ${
+                className={`border-2 rounded-xl p-3 flex items-center justify-center gap-2 transition-colors ${
                   onCredit 
                     ? "bg-gray-300 border-gray-400 cursor-not-allowed opacity-50" 
                     : "bg-gray-100 hover:bg-gray-200 border-gray-300"
@@ -3497,13 +3497,14 @@ const POSInterfaceCore = () => {
                   }
                 }}
                 disabled={onCredit}
-                className={`border-2 rounded-xl px-6 flex items-center justify-center transition-colors ${
+                className={`border-2 rounded-xl p-3 flex items-center justify-center transition-colors ${
                   onCredit 
                     ? "bg-gray-300 border-gray-400 cursor-not-allowed opacity-50" 
                     : "bg-gray-100 hover:bg-gray-200 border-gray-300"
                 }`}
               >
-                <Plus className="w-6 h-6 text-gray-600" />
+                <Plus className="w-6 h-6 text-gray-600 mr-2" />
+                <span className="text-gray-700 font-medium">Добавить</span>
               </button>
             </div>
 
