@@ -42,7 +42,6 @@ import {
 import { toast } from "sonner";
 import type { Stock } from "@/core/api/stock";
 import { StockSelectionModal } from "./StockSelectionModal";
-import { VirtualKeyboard } from "./VirtualKeyboard";
 
 interface ProductInCart {
   id: number;
@@ -230,19 +229,6 @@ const POSInterfaceCore = () => {
   const [barcodeScanInput, setBarcodeScanInput] = useState("");
   const barcodeInputRef = useRef<HTMLInputElement>(null);
   const [isProcessingBarcode, setIsProcessingBarcode] = useState(false);
-  
-  // Refs for input fields with virtual keyboard
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const barcodeSearchInputRef = useRef<HTMLInputElement>(null);
-  const clientSearchInputRef = useRef<HTMLInputElement>(null);
-  const debtDepositInputRef = useRef<HTMLInputElement>(null);
-  const debtDueDateInputRef = useRef<HTMLInputElement>(null);
-  const clientNameInputRef = useRef<HTMLInputElement>(null);
-  const clientPhoneInputRef = useRef<HTMLInputElement>(null);
-  const clientAddressInputRef = useRef<HTMLInputElement>(null);
-  const clientCeoInputRef = useRef<HTMLInputElement>(null);
-  const clientBalanceInputRef = useRef<HTMLInputElement>(null);
-  const manualQuantityInputRef = useRef<HTMLInputElement>(null);
   const [debugMode, setDebugMode] = useState(false); // Toggle with Ctrl+D
   const [lastScannedBarcode, setLastScannedBarcode] = useState("");
   // Quantity modal state
@@ -310,11 +296,6 @@ const POSInterfaceCore = () => {
 
   // Fullscreen mode state - default based on route
   const [isFullscreenMode, setIsFullscreenMode] = useState(isFullscreenRoute);
-
-  // Virtual keyboard state
-  const [isVirtualKeyboardVisible, setIsVirtualKeyboardVisible] = useState(false);
-  const [activeInputRef, setActiveInputRef] = useState<React.RefObject<HTMLInputElement | null> | null>(null);
-  const [keyboardLayout, setKeyboardLayout] = useState<"default" | "numeric">("default");
 
   // User data
   const { data: currentUser } = useCurrentUser();
@@ -847,26 +828,6 @@ const POSInterfaceCore = () => {
       setSelectedSeller(currentUser.id);
     }
   };
-
-  // Virtual keyboard handlers
-  const handleInputFocus = useCallback((inputRef: React.RefObject<HTMLInputElement | null>, layout: "default" | "numeric" = "default") => {
-    setActiveInputRef(inputRef);
-    setKeyboardLayout(layout);
-    setIsVirtualKeyboardVisible(true);
-  }, []);
-
-  const handleInputBlur = useCallback(() => {
-    // Delay hiding to allow keyboard button clicks
-    setTimeout(() => {
-      setIsVirtualKeyboardVisible(false);
-      setActiveInputRef(null);
-    }, 100);
-  }, []);
-
-  const handleKeyboardClose = useCallback(() => {
-    setIsVirtualKeyboardVisible(false);
-    setActiveInputRef(null);
-  }, []);
 
   // Session management functions
   const createNewSession = () => {
@@ -1462,13 +1423,13 @@ const POSInterfaceCore = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Product Header */}
-          <div className="mb-4 px-6 pt-4">
-            <h2 className="text-4xl font-bold mb-3 text-gray-900">
+          <div className="mb-6 px-6 pt-6">
+            <h2 className="text-3xl font-bold mb-2 text-gray-900">
               {cartProducts.length > 0
                 ? `${cartProducts.length} товар(ов) в корзине`
                 : "Корзина пуста"}
             </h2>
-            <div className="text-2xl text-gray-700 font-medium">
+            <div className="text-xl text-gray-700 font-medium">
               Общая сумма: {total.toLocaleString()} сум
             </div>
 
@@ -1566,29 +1527,29 @@ const POSInterfaceCore = () => {
 
           {/* Summary Cards */}
           <div
-            className={`flex space-x-4 ${isFullscreenMode ? "px-4 mb-4" : "px-6 mb-4"}`}
+            className={`flex space-x-4 ${isFullscreenMode ? "px-4 mb-4" : "px-6 mb-6"}`}
           >
-            <div className="flex-1 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border-2 border-blue-200 shadow-md">
+            <div className="flex-1 bg-gray-100 rounded-xl p-6">
               <div className="flex justify-between items-center">
                 <div className="text-left">
-                  <div className="text-blue-700 text-lg font-semibold">Карта</div>
+                  <div className="text-gray-600 text-base font-medium">Карта</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-blue-600 text-base mb-2 font-medium">Итого</div>
-                  <div className="text-4xl font-bold text-blue-900">
+                  <div className="text-gray-600 text-base mb-1 font-medium">Итого</div>
+                  <div className="text-4xl font-bold text-gray-900">
                     {total.toLocaleString()}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex-1 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 border-2 border-green-200 shadow-md">
+            <div className="flex-1 bg-gray-100 rounded-xl p-6">
               <div className="flex justify-between items-center">
                 <div className="text-left">
-                  <div className="text-green-700 text-lg font-semibold">Скидка</div>
+                  <div className="text-gray-600 text-base font-medium">Скидка</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-green-600 text-base mb-2 font-medium">К оплате</div>
-                  <div className="text-4xl font-bold text-green-900">
+                  <div className="text-gray-600 text-base mb-1 font-medium">К оплате</div>
+                  <div className="text-4xl font-bold text-gray-900">
                     {total.toLocaleString()}
                   </div>
                 </div>
@@ -1690,25 +1651,25 @@ const POSInterfaceCore = () => {
                   <table className="w-full">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="text-left p-4 font-semibold text-gray-700">
+                        <th className="text-left p-5 font-bold text-gray-700 text-lg">
                           №
                         </th>
-                        <th className="text-left p-4 font-semibold text-gray-700">
+                        <th className="text-left p-5 font-bold text-gray-700 text-lg">
                           Товар
                         </th>
-                        <th className="text-right p-4 font-semibold text-gray-700">
+                        <th className="text-right p-5 font-bold text-gray-700 text-lg">
                           Цена
                         </th>
-                        <th className="text-center p-4 font-semibold text-gray-700">
+                        <th className="text-center p-5 font-bold text-gray-700 text-lg">
                           Ед. изм.
                         </th>
-                        <th className="text-right p-4 font-semibold text-gray-700">
+                        <th className="text-right p-5 font-bold text-gray-700 text-lg">
                           Кол-во
                         </th>
-                        <th className="text-right p-4 font-semibold text-gray-700">
+                        <th className="text-right p-5 font-bold text-gray-700 text-lg">
                           Сумма
                         </th>
-                        <th className="text-center p-4 font-semibold text-gray-700 w-20">
+                        <th className="text-center p-5 font-bold text-gray-700 text-lg w-20">
                           Действия
                         </th>
                       </tr>
@@ -1748,21 +1709,21 @@ const POSInterfaceCore = () => {
                                   : "bg-white"
                             } transition-all duration-200 hover:bg-gray-100`}
                           >
-                            <td className="p-4 text-gray-900">{index + 1}</td>
-                            <td className="p-4 font-medium text-gray-900">
+                            <td className="p-5 text-gray-900 text-base font-medium">{index + 1}</td>
+                            <td className="p-5 font-medium text-gray-900">
                               <div>
-                                <div>{product.name}</div>
+                                <div className="text-base">{product.name}</div>
                                 {product.barcode && (
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-sm text-gray-500">
                                     Штрихкод: {product.barcode}
                                   </div>
                                 )}
                                 {product.product.ikpu && (
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-sm text-gray-500">
                                     ИКПУ: {product.product.ikpu}
                                   </div>
                                 )}
-                                <div className="text-xs text-green-600 font-medium">
+                                <div className="text-sm text-green-600 font-medium">
                                   В наличии:{" "}
                                   {parseFloat(
                                     String(product.product.quantity),
@@ -1771,7 +1732,7 @@ const POSInterfaceCore = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="p-4 text-right text-gray-900">
+                            <td className="p-5 text-right text-gray-900">
                               <button
                                 onClick={() => {
                                   setSelectedProductForPrice(product);
@@ -1779,12 +1740,12 @@ const POSInterfaceCore = () => {
                                   setPriceInput(product.price.toString());
                                   setIsPriceModalOpen(true);
                                 }}
-                                className="w-24 text-right px-3 py-2 border border-gray-300 rounded-md hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                                className="w-28 text-right px-4 py-3 text-base font-medium border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
                               >
                                 {product.price.toLocaleString()}
                               </button>
                             </td>
-                            <td className="p-4 text-center text-gray-900">
+                            <td className="p-5 text-center text-gray-900">
                               {product.product.available_units &&
                               product.product.available_units.length > 0 ? (
                                 <Select
@@ -1831,8 +1792,8 @@ const POSInterfaceCore = () => {
                                 </span>
                               )}
                             </td>
-                            <td className="p-4 text-right text-gray-900">
-                              <div className="flex items-center justify-end space-x-2">
+                            <td className="p-5 text-right text-gray-900">
+                              <div className="flex items-center justify-end space-x-3">
                                 <button
                                   onClick={() => {
                                     const newQuantity = product.quantity - 1;
@@ -1845,17 +1806,17 @@ const POSInterfaceCore = () => {
                                     }
                                   }}
                                   disabled={product.quantity <= 1}
-                                  className={`w-10 h-10 rounded-full ${
+                                  className={`w-12 h-12 rounded-full ${
                                     index === focusedProductIndex
                                       ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
                                       : "bg-gray-200 hover:bg-gray-300"
-                                  } ${product.quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-sm font-bold transition-colors`}
+                                  } ${product.quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-lg font-bold transition-colors`}
                                 >
                                   −
                                 </button>
                                 <button
                                   onClick={() => handleQuantityClick(product, index)}
-                                  className={`min-w-[80px] min-h-[50px] text-center border rounded-lg px-3 py-2 text-lg font-semibold transition-all ${
+                                  className={`min-w-[100px] min-h-[56px] text-center border rounded-lg px-4 py-3 text-xl font-semibold transition-all ${
                                     index === focusedProductIndex
                                       ? "border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
                                       : "border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50"
@@ -1875,20 +1836,20 @@ const POSInterfaceCore = () => {
                                     product.quantity >=
                                     parseFloat(String(product.product.quantity))
                                   }
-                                  className={`w-10 h-10 rounded-full ${
+                                  className={`w-12 h-12 rounded-full ${
                                     index === focusedProductIndex
                                       ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
                                       : "bg-gray-200 hover:bg-gray-300"
-                                  } ${product.quantity >= parseFloat(String(product.product.quantity)) ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-sm font-bold transition-colors`}
+                                  } ${product.quantity >= parseFloat(String(product.product.quantity)) ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-lg font-bold transition-colors`}
                                 >
                                   +
                                 </button>
                               </div>
                             </td>
-                            <td className="p-4 text-right font-semibold text-gray-900">
+                            <td className="p-5 text-right font-bold text-gray-900 text-base">
                               {product.total.toLocaleString()}
                             </td>
-                            <td className="p-4 text-center">
+                            <td className="p-5 text-center">
                               <button
                                 onClick={() => {
                                   removeProduct(product.id);
@@ -1900,13 +1861,13 @@ const POSInterfaceCore = () => {
                                     );
                                   }
                                 }}
-                                className={`w-8 h-8 rounded-full ${
+                                className={`w-10 h-10 rounded-full ${
                                   index === focusedProductIndex
                                     ? "bg-red-200 hover:bg-red-300 text-red-700 ring-2 ring-red-400"
                                     : "bg-red-100 hover:bg-red-200 text-red-600"
                                 } flex items-center justify-center transition-all`}
                               >
-                                <X className="w-4 h-4" />
+                                <X className="w-5 h-5" />
                               </button>
                             </td>
                           </tr>
@@ -1932,67 +1893,67 @@ const POSInterfaceCore = () => {
           </div>
 
           {/* Action Buttons at Bottom */}
-          <div className="bg-white p-6 border-t-2 border-gray-300">
-            <div className="flex items-center space-x-3 justify-center">
+          <div className="bg-white p-6 border-t border-gray-200">
+            <div className="flex items-center space-x-2 justify-center">
               <button
                 onClick={handleSearchClick}
-                className="bg-blue-500 text-white p-5 rounded-2xl hover:bg-blue-600 transition-all flex items-center justify-center min-w-[80px] min-h-[80px] relative shadow-lg hover:shadow-xl active:scale-95 transform"
+                className="bg-blue-500 text-white p-4 rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center min-w-[60px] min-h-[60px] relative"
                 title="Поиск товаров"
               >
-                <Search className="w-8 h-8" />
-                <span className="text-base bg-blue-400 text-white px-2.5 py-1 rounded absolute -top-2 -right-2 font-bold">
+                <Search className="w-6 h-6" />
+                <span className="text-sm bg-blue-400 text-white px-2 py-1 rounded absolute -top-1 -right-1">
                   B
                 </span>
               </button>
               <button
                 onClick={handleUserClick}
-                className={`p-5 rounded-2xl transition-all flex items-center justify-center relative min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform ${
+                className={`p-4 rounded-xl transition-colors flex items-center justify-center relative min-w-[60px] min-h-[60px] ${
                   selectedSeller || selectedClient
                     ? "bg-blue-500 text-white hover:bg-blue-600"
                     : "bg-green-500 text-white hover:bg-green-600"
                 }`}
                 title="Выбор пользователя"
               >
-                <UserIcon className="w-8 h-8" />
+                <UserIcon className="w-6 h-6" />
                 {(selectedSeller || selectedClient) && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
                 )}
               </button>
 
               <button
                 onClick={createNewSession}
-                className="bg-purple-500 text-white p-5 rounded-2xl hover:bg-purple-600 transition-all flex items-center justify-center min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform"
+                className="bg-purple-500 text-white p-4 rounded-xl hover:bg-purple-600 transition-colors flex items-center justify-center min-w-[60px] min-h-[60px]"
                 title="Новая сессия"
               >
-                <Plus className="w-8 h-8" />
+                <Plus className="w-6 h-6" />
               </button>
 
               {/* Calculator Toggle Button - Only show when calculator is hidden */}
               {!isCalculatorVisible && (
                 <button
                   onClick={() => setIsCalculatorVisible(true)}
-                  className="bg-gray-500 text-white p-5 rounded-2xl hover:bg-gray-600 transition-all flex items-center justify-center min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform"
+                  className="bg-gray-500 text-white p-4 rounded-xl hover:bg-gray-600 transition-colors flex items-center justify-center min-w-[60px] min-h-[60px]"
                   title="Показать калькулятор"
                 >
-                  <span className="text-2xl font-bold">=</span>
+                  <span className="text-xl font-bold">=</span>
                 </button>
               )}
 
               <button
                 onClick={handleBottomDownClick}
                 disabled={cartProducts.length === 0}
-                className="bg-indigo-500 text-white p-5 rounded-2xl hover:bg-indigo-600 transition-all flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform"
+                className="bg-indigo-500 text-white p-4 rounded-xl hover:bg-indigo-600 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed min-w-[60px] min-h-[60px]"
                 title="Вниз по списку"
               >
-                <ChevronDown className="w-8 h-8" />
+                <ChevronDown className="w-6 h-6" />
               </button>
               <button
                 onClick={handleBottomUpClick}
                 disabled={cartProducts.length === 0}
-                className="bg-teal-500 text-white p-5 rounded-2xl hover:bg-teal-600 transition-all flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform"
+                className="bg-teal-500 text-white p-4 rounded-xl hover:bg-teal-600 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed min-w-[60px] min-h-[60px]"
                 title="Вверх по списку"
               >
-                <ChevronUp className="w-8 h-8" />
+                <ChevronUp className="w-6 h-6" />
               </button>
 
               {/* Fullscreen Toggle Button */}
@@ -2001,11 +1962,11 @@ const POSInterfaceCore = () => {
                   onClick={() => {
                     navigate("/pos-fullscreen");
                   }}
-                  className="bg-orange-500 text-white p-5 rounded-2xl hover:bg-orange-600 transition-all flex items-center justify-center min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform"
+                  className="bg-orange-500 text-white p-4 rounded-xl hover:bg-orange-600 transition-colors flex items-center justify-center min-w-[60px] min-h-[60px]"
                   title="Полноэкранный режим"
                 >
                   <svg
-                    className="w-8 h-8"
+                    className="w-6 h-6"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -2023,10 +1984,10 @@ const POSInterfaceCore = () => {
                   onClick={() => {
                     navigate("/pos");
                   }}
-                  className="bg-orange-500 text-white p-5 rounded-2xl hover:bg-orange-600 transition-all flex items-center justify-center min-w-[80px] min-h-[80px] shadow-lg hover:shadow-xl active:scale-95 transform"
+                  className="bg-orange-500 text-white p-4 rounded-xl hover:bg-orange-600 transition-colors flex items-center justify-center min-w-[60px] min-h-[60px]"
                   title="Выйти из полноэкранного режима"
                 >
-                  <X className="w-8 h-8" />
+                  <X className="w-6 h-6" />
                 </button>
               )}
             </div>
@@ -2036,9 +1997,9 @@ const POSInterfaceCore = () => {
 
       {/* Right Panel - Calculator */}
       {isCalculatorVisible && (
-        <div className="w-[420px] bg-white border-l-2 border-gray-300 flex flex-col shadow-lg">
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           {/* Calculator Display */}
-          <div className="p-6 border-b-2 border-gray-200">
+          <div className="p-6 border-b border-gray-200">
             {/* Calculator Header with Close Button */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-2xl font-bold text-gray-900">
@@ -2046,19 +2007,19 @@ const POSInterfaceCore = () => {
               </h3>
               <button
                 onClick={() => setIsCalculatorVisible(false)}
-                className="p-3 hover:bg-gray-100 rounded-xl transition-colors active:scale-95"
+                className="p-3 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Закрыть калькулятор"
               >
                 <X className="w-6 h-6 text-gray-500" />
               </button>
             </div>
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-2xl mb-4 border-2 border-gray-200">
+            <div className="bg-gray-100 p-5 rounded-xl mb-4">
               {operation && previousInput && (
-                <div className="text-right text-xl text-gray-600 font-mono mb-1">
+                <div className="text-right text-2xl text-gray-600 font-mono">
                   {previousInput} {operation}
                 </div>
               )}
-              <div className="text-right text-4xl font-mono font-bold text-gray-900">
+              <div className="text-right text-5xl font-mono text-gray-900">
                 {currentInput || "0"}
               </div>
             </div>
@@ -2066,25 +2027,25 @@ const POSInterfaceCore = () => {
 
           {/* Calculator Keypad */}
           <div className="flex-1 p-6">
-            <div className="grid grid-cols-4 gap-3 h-full">
+            <div className="grid grid-cols-4 gap-5 h-full">
               {/* Row 1 */}
               <button
                 onClick={handleClearInput}
-                className="bg-orange-100 hover:bg-orange-200 rounded-2xl transition-all h-24 flex items-center justify-center col-span-2 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-orange-100 hover:bg-orange-200 rounded-2xl transition-colors h-24 flex items-center justify-center col-span-2 active:scale-95 touch-manipulation"
               >
-                <span className="text-xl font-bold text-orange-700">
+                <span className="text-2xl font-bold text-orange-600">
                   Очистить
                 </span>
               </button>
               <button
                 onClick={handleBackspace}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-2xl font-semibold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-3xl font-semibold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 <X className="w-8 h-8" />
               </button>
               <button
                 onClick={() => handleOperation("/")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-blue-700 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 ÷
               </button>
@@ -2092,25 +2053,25 @@ const POSInterfaceCore = () => {
               {/* Row 2 */}
               <button
                 onClick={() => handleNumberClick("7")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 7
               </button>
               <button
                 onClick={() => handleNumberClick("8")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 8
               </button>
               <button
                 onClick={() => handleNumberClick("9")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 9
               </button>
               <button
                 onClick={() => handleOperation("*")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-blue-700 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 ×
               </button>
@@ -2118,25 +2079,25 @@ const POSInterfaceCore = () => {
               {/* Row 3 */}
               <button
                 onClick={() => handleNumberClick("4")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 4
               </button>
               <button
                 onClick={() => handleNumberClick("5")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 5
               </button>
               <button
                 onClick={() => handleNumberClick("6")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 6
               </button>
               <button
                 onClick={() => handleOperation("-")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-blue-700 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 −
               </button>
@@ -2144,25 +2105,25 @@ const POSInterfaceCore = () => {
               {/* Row 4 */}
               <button
                 onClick={() => handleNumberClick("1")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 1
               </button>
               <button
                 onClick={() => handleNumberClick("2")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 2
               </button>
               <button
                 onClick={() => handleNumberClick("3")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 3
               </button>
               <button
                 onClick={() => handleOperation("+")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-blue-700 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 +
               </button>
@@ -2170,27 +2131,27 @@ const POSInterfaceCore = () => {
               {/* Row 5 */}
               <button
                 onClick={() => handleNumberClick("0")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 col-span-2 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 col-span-2 active:scale-95 touch-manipulation"
               >
                 0
               </button>
               <button
                 onClick={() => handleNumberClick(",")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-all h-24 flex items-center justify-center text-gray-900 active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 ,
               </button>
               <button
                 onClick={handleEquals}
-                className="bg-green-100 hover:bg-green-200 rounded-2xl transition-all h-24 flex items-center justify-center active:scale-95 shadow-md hover:shadow-lg"
+                className="bg-green-100 hover:bg-green-200 rounded-2xl transition-colors h-24 flex items-center justify-center active:scale-95 touch-manipulation"
               >
-                <span className="text-3xl font-bold text-green-700">=</span>
+                <span className="text-3xl font-bold text-green-600">=</span>
               </button>
             </div>
           </div>
 
           {/* Payment Button */}
-          <div className="p-6 border-t-2 border-gray-200">
+          <div className="p-6 border-t border-gray-200">
             <button
               onClick={() => {
                 setDiscountAmount(0);
@@ -2199,12 +2160,18 @@ const POSInterfaceCore = () => {
                 ]);
                 setIsPaymentModalOpen(true);
               }}
-              disabled={cartProducts.length === 0 || !selectedSeller}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-7 rounded-2xl text-2xl font-bold shadow-xl hover:shadow-2xl hover:from-green-600 hover:to-green-700 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed active:scale-98"
+              disabled={cartProducts.length === 0}
+              className={`w-full py-10 rounded-2xl text-2xl font-bold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed min-h-[100px] active:scale-95 touch-manipulation ${
+                onCredit
+                  ? "bg-amber-600 text-white hover:bg-amber-700"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
             >
-              {onCredit
-                ? `В долг ${total.toLocaleString()} сум`
-                : `Оплатить ${total.toLocaleString()} сум`}
+              {cartProducts.length === 0
+                ? "Добавьте товары"
+                : onCredit
+                  ? `В долг ${total.toLocaleString()} сум`
+                  : `Оплатить ${total.toLocaleString()} сум`}
             </button>
           </div>
         </div>
@@ -2229,18 +2196,15 @@ const POSInterfaceCore = () => {
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                 <Input
-                  ref={searchInputRef}
                   type="text"
                   placeholder="Поиск по названию товара..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={(e) => {
                     e.stopPropagation();
-                    handleInputFocus(searchInputRef, "default");
                   }}
                   onBlur={(e) => {
                     e.stopPropagation();
-                    handleInputBlur();
                   }}
                   className="w-full pl-14 pr-6 py-4 text-lg border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
                   autoComplete="off"
@@ -2252,18 +2216,15 @@ const POSInterfaceCore = () => {
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
                 <Input
-                  ref={barcodeSearchInputRef}
                   type="text"
                   placeholder="Поиск по штрихкоду..."
                   value={barcodeSearchTerm}
                   onChange={(e) => setBarcodeSearchTerm(e.target.value)}
                   onFocus={(e) => {
                     e.stopPropagation();
-                    handleInputFocus(barcodeSearchInputRef, "numeric");
                   }}
                   onBlur={(e) => {
                     e.stopPropagation();
-                    handleInputBlur();
                   }}
                   className="w-full pl-14 pr-6 py-4 text-lg border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
                   autoComplete="off"
@@ -2580,18 +2541,15 @@ const POSInterfaceCore = () => {
                 </Button>
               </div>
               <Input
-                ref={clientSearchInputRef}
                 type="text"
                 placeholder="Поиск клиентов..."
                 value={clientSearchTerm}
                 onChange={(e) => setClientSearchTerm(e.target.value)}
                 onFocus={(e) => {
                   e.stopPropagation();
-                  handleInputFocus(clientSearchInputRef, "default");
                 }}
                 onBlur={(e) => {
                   e.stopPropagation();
-                  handleInputBlur();
                 }}
                 className="mb-2"
                 autoComplete="off"
@@ -2643,18 +2601,15 @@ const POSInterfaceCore = () => {
                     Сумма залога (сум)
                   </label>
                   <Input
-                    ref={debtDepositInputRef}
                     type="number"
                     placeholder="Введите сумму залога..."
                     value={debtDeposit}
                     onChange={(e) => setDebtDeposit(e.target.value)}
                     onFocus={(e) => {
                       e.stopPropagation();
-                      handleInputFocus(debtDepositInputRef, "numeric");
                     }}
                     onBlur={(e) => {
                       e.stopPropagation();
-                      handleInputBlur();
                     }}
                     className="mb-2"
                     autoComplete="off"
@@ -2828,19 +2783,19 @@ const POSInterfaceCore = () => {
                         key={qty}
                         onClick={() => !isDisabled && handleQuantitySelect(qty)}
                         disabled={isDisabled}
-                        className={`border-2 rounded-2xl p-6 transition-all duration-200 min-h-[100px] touch-manipulation ${
+                        className={`border-2 rounded-2xl p-8 transition-all duration-200 min-h-[120px] touch-manipulation ${
                           isDisabled
                             ? "bg-gray-100 border-gray-300 opacity-40 cursor-not-allowed"
                             : "bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-400 transform hover:scale-105 active:scale-95"
                         }`}
                       >
                         <div
-                          className={`text-3xl font-bold mb-2 ${isDisabled ? "text-gray-400" : "text-blue-700"}`}
+                          className={`text-4xl font-bold mb-2 ${isDisabled ? "text-gray-400" : "text-blue-700"}`}
                         >
                           {qty}
                         </div>
                         <div
-                          className={`text-sm ${isDisabled ? "text-gray-400" : "text-blue-600"}`}
+                          className={`text-base font-medium ${isDisabled ? "text-gray-400" : "text-blue-600"}`}
                         >
                           {selectedProductForQuantity?.selectedUnit
                             ?.short_name || "штук"}
@@ -2857,12 +2812,12 @@ const POSInterfaceCore = () => {
 
                 {/* Current Quantity Display */}
                 {selectedProductForQuantity && (
-                  <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <div className="bg-gray-50 rounded-xl p-5 mb-4">
                     <div className="text-center">
-                      <div className="text-sm text-gray-600 mb-1">
+                      <div className="text-base text-gray-600 mb-2 font-medium">
                         Текущее количество
                       </div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-3xl font-bold text-gray-900">
                         {selectedProductForQuantity.quantity.toFixed(2)}{" "}
                         {selectedProductForQuantity.selectedUnit?.short_name ||
                           "штук"}
@@ -2872,16 +2827,16 @@ const POSInterfaceCore = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3">
+                <div className="flex space-x-4">
                   <button
                     onClick={() => setIsQuantityModalOpen(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
                   >
                     Отмена
                   </button>
                   <button
                     onClick={handleManualQuantityMode}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
                   >
                     Ввести вручную
                   </button>
@@ -2895,17 +2850,14 @@ const POSInterfaceCore = () => {
                     Введите количество
                   </label>
                   <input
-                    ref={manualQuantityInputRef}
                     type="number"
                     value={manualQuantityInput}
                     onChange={(e) => setManualQuantityInput(e.target.value)}
                     onFocus={(e) => {
                       e.stopPropagation();
-                      handleInputFocus(manualQuantityInputRef, "numeric");
                     }}
                     onBlur={(e) => {
                       e.stopPropagation();
-                      handleInputBlur();
                     }}
                     className={`w-full px-4 py-4 text-2xl text-center border-2 rounded-xl focus:outline-none ${
                       manualQuantityInput &&
@@ -2947,10 +2899,10 @@ const POSInterfaceCore = () => {
                 </div>
 
                 {/* Manual Input Action Buttons */}
-                <div className="flex space-x-3">
+                <div className="flex space-x-4">
                   <button
                     onClick={() => setIsManualQuantityMode(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
                   >
                     Назад
                   </button>
@@ -2966,7 +2918,7 @@ const POSInterfaceCore = () => {
                           ),
                         )
                     }
-                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
                   >
                     Применить
                   </button>
@@ -3023,7 +2975,7 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Number Pad */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-3 gap-4 mb-4">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "⌫"].map(
                 (btn) => (
                   <button
@@ -3035,7 +2987,7 @@ const POSInterfaceCore = () => {
                         handlePriceNumberClick(btn);
                       }
                     }}
-                    className={`py-6 text-2xl font-semibold rounded-xl transition-all ${
+                    className={`py-8 text-3xl font-bold rounded-xl transition-all min-h-[80px] ${
                       btn === "⌫"
                         ? "bg-red-100 hover:bg-red-200 text-red-600"
                         : "bg-blue-50 hover:bg-blue-100 text-blue-700"
@@ -3048,10 +3000,10 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-3">
+            <div className="flex space-x-4">
               <button
                 onClick={handlePriceClear}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
               >
                 Очистить
               </button>
@@ -3061,14 +3013,14 @@ const POSInterfaceCore = () => {
                   setSelectedProductForPrice(null);
                   setPriceInput("");
                 }}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
               >
                 Отмена
               </button>
               <button
                 onClick={handlePriceSubmit}
                 disabled={!priceInput || parseFloat(priceInput) <= 0}
-                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-xl font-semibold transition-colors min-h-[60px]"
+                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
               >
                 Применить
               </button>
@@ -3634,19 +3586,12 @@ const POSInterfaceCore = () => {
                 {newClientData.type === 'Юр.лицо' ? 'Название компании' : 'Имя'} *
               </label>
               <Input
-                ref={clientNameInputRef}
                 type="text"
                 placeholder={newClientData.type === 'Юр.лицо' ? 'Введите название компании' : 'Введите имя'}
                 value={newClientData.name}
                 onChange={(e) => setNewClientData({ ...newClientData, name: e.target.value })}
-                onFocus={(e) => {
-                  e.stopPropagation();
-                  handleInputFocus(clientNameInputRef, "default");
-                }}
-                onBlur={(e) => {
-                  e.stopPropagation();
-                  handleInputBlur();
-                }}
+                onFocus={(e) => e.stopPropagation()}
+                onBlur={(e) => e.stopPropagation()}
               />
             </div>
 
@@ -3656,7 +3601,6 @@ const POSInterfaceCore = () => {
                 Телефон *
               </label>
               <Input
-                ref={clientPhoneInputRef}
                 type="tel"
                 placeholder="+998970953905"
                 value={newClientData.phone_number}
@@ -3666,14 +3610,8 @@ const POSInterfaceCore = () => {
                   value = value.slice(0, 9);
                   setNewClientData({ ...newClientData, phone_number: '+998' + value });
                 }}
-                onFocus={(e) => {
-                  e.stopPropagation();
-                  handleInputFocus(clientPhoneInputRef, "numeric");
-                }}
-                onBlur={(e) => {
-                  e.stopPropagation();
-                  handleInputBlur();
-                }}
+                onFocus={(e) => e.stopPropagation()}
+                onBlur={(e) => e.stopPropagation()}
                 maxLength={13}
               />
             </div>
@@ -3684,19 +3622,12 @@ const POSInterfaceCore = () => {
                 Адрес *
               </label>
               <Input
-                ref={clientAddressInputRef}
                 type="text"
                 placeholder="Введите адрес"
                 value={newClientData.address}
                 onChange={(e) => setNewClientData({ ...newClientData, address: e.target.value })}
-                onFocus={(e) => {
-                  e.stopPropagation();
-                  handleInputFocus(clientAddressInputRef, "default");
-                }}
-                onBlur={(e) => {
-                  e.stopPropagation();
-                  handleInputBlur();
-                }}
+                onFocus={(e) => e.stopPropagation()}
+                onBlur={(e) => e.stopPropagation()}
               />
             </div>
 
@@ -3708,19 +3639,12 @@ const POSInterfaceCore = () => {
                     Имя генерального директора *
                   </label>
                   <Input
-                    ref={clientCeoInputRef}
                     type="text"
                     placeholder="Введите имя генерального директора"
                     value={newClientData.ceo_name}
                     onChange={(e) => setNewClientData({ ...newClientData, ceo_name: e.target.value })}
-                    onFocus={(e) => {
-                      e.stopPropagation();
-                      handleInputFocus(clientCeoInputRef, "default");
-                    }}
-                    onBlur={(e) => {
-                      e.stopPropagation();
-                      handleInputBlur();
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
+                    onBlur={(e) => e.stopPropagation()}
                   />
                 </div>
                 <div>
@@ -3728,19 +3652,12 @@ const POSInterfaceCore = () => {
                     Баланс *
                   </label>
                   <Input
-                    ref={clientBalanceInputRef}
                     type="number"
                     placeholder="Введите баланс"
                     value={newClientData.balance}
                     onChange={(e) => setNewClientData({ ...newClientData, balance: Number(e.target.value) })}
-                    onFocus={(e) => {
-                      e.stopPropagation();
-                      handleInputFocus(clientBalanceInputRef, "numeric");
-                    }}
-                    onBlur={(e) => {
-                      e.stopPropagation();
-                      handleInputBlur();
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
+                    onBlur={(e) => e.stopPropagation()}
                   />
                 </div>
               </>
@@ -3804,15 +3721,6 @@ const POSInterfaceCore = () => {
           </div>
         </WideDialogContent>
       </WideDialog>
-
-      {/* Virtual Keyboard */}
-      {isVirtualKeyboardVisible && activeInputRef && (
-        <VirtualKeyboard
-          inputRef={activeInputRef}
-          onClose={handleKeyboardClose}
-          layout={keyboardLayout}
-        />
-      )}
     </div>
   );
 };
@@ -3821,7 +3729,7 @@ const POSInterfaceCore = () => {
 const POSInterface = () => {
   const { data: userData } = useCurrentUser();
 
-  // Early return before rendering main wdasdadas
+  // Early return before rendering main component
   if (!userData?.has_active_shift) {
     return <OpenShiftForm />;
   }
