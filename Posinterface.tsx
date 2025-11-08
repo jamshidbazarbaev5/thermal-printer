@@ -2858,13 +2858,13 @@ const POSInterfaceCore = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setIsQuantityModalOpen(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
                   >
                     Отмена
                   </button>
                   <button
                     onClick={handleManualQuantityMode}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
                   >
                     Ввести вручную
                   </button>
@@ -2930,7 +2930,7 @@ const POSInterfaceCore = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setIsManualQuantityMode(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
                   >
                     Назад
                   </button>
@@ -2946,7 +2946,7 @@ const POSInterfaceCore = () => {
                           ),
                         )
                     }
-                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
                   >
                     Применить
                   </button>
@@ -2960,8 +2960,8 @@ const POSInterfaceCore = () => {
       {/* Price Input Modal */}
       <WideDialog open={isPriceModalOpen} onOpenChange={setIsPriceModalOpen}>
         <WideDialogContent className="max-w-md p-0">
-          <WideDialogHeader className="p-6 pb-4">
-            <WideDialogTitle className="text-xl font-bold text-center">
+          <WideDialogHeader className="p-4 pb-3">
+            <WideDialogTitle className="text-lg font-bold text-center">
               Введите цену
             </WideDialogTitle>
             {selectedProductForPrice && (
@@ -2977,9 +2977,9 @@ const POSInterfaceCore = () => {
             )}
           </WideDialogHeader>
 
-          <div className="p-6 pt-2">
+          <div className="p-4 pt-2">
             {/* Price Display */}
-            <div className="bg-gray-50 rounded-xl p-6 mb-6">
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
               <div className="text-center">
                 <div className="text-sm text-gray-600 mb-2">
                   Цена за единицу
@@ -3003,7 +3003,7 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Number Pad */}
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-3 gap-3 mb-3">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "⌫"].map(
                 (btn) => (
                   <button
@@ -3015,7 +3015,7 @@ const POSInterfaceCore = () => {
                         handlePriceNumberClick(btn);
                       }
                     }}
-                    className={`py-8 text-3xl font-bold rounded-xl transition-all min-h-[80px] ${
+                    className={`py-6 text-2xl font-bold rounded-xl transition-all min-h-[64px] ${
                       btn === "⌫"
                         ? "bg-red-100 hover:bg-red-200 text-red-600"
                         : "bg-blue-50 hover:bg-blue-100 text-blue-700"
@@ -3028,10 +3028,10 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-4">
+            <div className="flex space-x-3">
               <button
                 onClick={handlePriceClear}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
               >
                 Очистить
               </button>
@@ -3041,14 +3041,14 @@ const POSInterfaceCore = () => {
                   setSelectedProductForPrice(null);
                   setPriceInput("");
                 }}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
               >
                 Отмена
               </button>
               <button
                 onClick={handlePriceSubmit}
                 disabled={!priceInput || parseFloat(priceInput) <= 0}
-                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-xl text-base font-bold transition-colors min-h-[48px] active:scale-95 touch-manipulation"
               >
                 Применить
               </button>
