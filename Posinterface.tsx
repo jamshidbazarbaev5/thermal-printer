@@ -2021,9 +2021,9 @@ const POSInterfaceCore = () => {
 
       {/* Right Panel - Calculator */}
       {isCalculatorVisible && (
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-screen">
           {/* Calculator Display */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-6 border-b border-gray-200 flex-shrink-0">
             {/* Calculator Header with Close Button */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-2xl font-bold text-gray-900">
@@ -2050,8 +2050,8 @@ const POSInterfaceCore = () => {
           </div>
 
           {/* Calculator Keypad */}
-          <div className="flex-1 p-6">
-            <div className="grid grid-cols-4 gap-5 h-full">
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="grid grid-cols-4 gap-5">
               {/* Row 1 */}
               <button
                 onClick={handleClearInput}
@@ -2175,7 +2175,7 @@ const POSInterfaceCore = () => {
           </div>
 
           {/* Payment Button */}
-          <div className="p-6 border-t border-gray-200">
+          <div className="p-6 border-t border-gray-200 flex-shrink-0 bg-white">
             <button
               onClick={() => {
                 setDiscountAmount(0);
