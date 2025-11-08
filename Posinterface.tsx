@@ -1939,6 +1939,30 @@ const POSInterfaceCore = () => {
                 </button>
               )}
 
+              {/* Payment Button - Show when calculator is hidden */}
+              {!isCalculatorVisible && (
+                <button
+                  onClick={() => {
+                    setDiscountAmount(0);
+                    setPaymentMethods([
+                      { amount: 0, payment_method: "Наличные" },
+                    ]);
+                    setIsPaymentModalOpen(true);
+                  }}
+                  disabled={cartProducts.length === 0}
+                  className={`py-4 px-6 rounded-xl text-lg font-bold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed min-h-[60px] active:scale-95 touch-manipulation ${
+                    onCredit
+                      ? "bg-amber-600 text-white hover:bg-amber-700"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                  title={cartProducts.length === 0 ? "Добавьте товары" : onCredit ? `В долг ${total.toLocaleString()} сум` : `Оплатить ${total.toLocaleString()} сум`}
+                >
+                  {cartProducts.length === 0
+                    ? "Товары"
+                    : `${onCredit ? "Долг" : "Оплата"}: ${total.toLocaleString()}`}
+                </button>
+              )}
+
               <button
                 onClick={handleBottomDownClick}
                 disabled={cartProducts.length === 0}
