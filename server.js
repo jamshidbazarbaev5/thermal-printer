@@ -181,10 +181,9 @@ async function printUsingSystemPrinter(content) {
       
       // Create a PowerShell script that sends raw data directly to printer
       const psScriptPath = path.join(tempDir, 'print_thermal.ps1');
-      const psScript = `
-# Raw printing for thermal POS printers
-$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
-$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
+      const psScript = `# Raw printing for thermal POS printers
+\$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '\\"') : ''}"
+\$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
 
 Add-Type -TypeDefinition @"
 using System;
@@ -264,14 +263,14 @@ public class RawPrinterHelper
 
 try {
     # Read content
-    $content = [System.IO.File]::ReadAllText($tempFilePath, [System.Text.Encoding]::UTF8)
+    \$content = [System.IO.File]::ReadAllText(\$tempFilePath, [System.Text.Encoding]::UTF8)
     
-    if ($printerName) {
+    if (\$printerName) {
         # Send raw data to printer
-        $success = [RawPrinterHelper]::SendStringToPrinter($printerName, $content)
+        \$success = [RawPrinterHelper]::SendStringToPrinter(\$printerName, \$content)
         
-        if ($success) {
-            Write-Host "✓ Printed to $printerName using raw method"
+        if (\$success) {
+            Write-Host "Printed to \$printerName using raw method"
         } else {
             throw "Failed to send data to printer"
         }
@@ -279,7 +278,7 @@ try {
         throw "No printer specified"
     }
 } catch {
-    Write-Error "Print error: $($_.Exception.Message)"
+    Write-Error "Print error: \$(\$_.Exception.Message)"
     exit 1
 }
 `;
@@ -298,25 +297,24 @@ try {
         // Fallback: Use copy command to send directly to printer port
         try {
           // Try to copy file directly to printer using copy command
-          const copyScript = `
-$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
-$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
+          const copyScript = `\$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '\\"') : ''}"
+\$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
 
-if ($printerName) {
+if (\$printerName) {
     try {
         # Method 1: Try using copy command to printer
-        $printerPort = (Get-Printer -Name $printerName).PortName
-        if ($printerPort -and $printerPort -like "USB*") {
+        \$printerPort = (Get-Printer -Name \$printerName).PortName
+        if (\$printerPort -and \$printerPort -like "USB*") {
             # For USB printers, try direct copy
-            cmd /c copy /b "$tempFilePath" "\\\\localhost\\$printerName"
+            cmd /c copy /b "\$tempFilePath" "\\\\localhost\\\$printerName"
             Write-Host "Printed using direct copy method"
         } else {
             # Method 2: Use Out-Printer as fallback
-            Get-Content "$tempFilePath" -Raw | Out-Printer -Name $printerName
+            Get-Content "\$tempFilePath" -Raw | Out-Printer -Name \$printerName
             Write-Host "Printed using Out-Printer method"
         }
     } catch {
-        Write-Error $_.Exception.Message
+        Write-Error \$_.Exception.Message
         exit 1
     }
 } else {
