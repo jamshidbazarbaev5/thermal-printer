@@ -63,7 +63,7 @@ async function initializePrinter() {
         return;
       } catch (interfaceError) {
         console.log(
-          `⚠️  Interface ${interfaceStr} failed: ${interfaceError.message}`,
+            `⚠️  Interface ${interfaceStr} failed: ${interfaceError.message}`,
         );
         continue;
       }
@@ -97,32 +97,32 @@ async function testPrinterConnection() {
 // Detect thermal printer on Windows
 function detectWindowsThermalPrinter() {
   if (process.platform !== 'win32') return null;
-  
+
   try {
     // Get list of printers using PowerShell
     const result = execSync('powershell -Command "Get-Printer | Select-Object Name, DriverName | ConvertTo-Json"', { encoding: 'utf8' });
     const printers = JSON.parse(result);
     const printerList = Array.isArray(printers) ? printers : [printers];
-    
+
     console.log('\n📋 Available Windows Printers:');
     printerList.forEach(p => {
       console.log(`   - ${p.Name} (${p.DriverName})`);
     });
-    
+
     // Look for thermal printer (USB, POS, or similar names)
-    const thermalPrinter = printerList.find(p => 
-      p.Name.toLowerCase().includes('usb') ||
-      p.Name.toLowerCase().includes('pos') ||
-      p.Name.toLowerCase().includes('thermal') ||
-      p.Name.toLowerCase().includes('h-58') ||
-      p.Name.toLowerCase().includes('receipt')
+    const thermalPrinter = printerList.find(p =>
+        p.Name.toLowerCase().includes('usb') ||
+        p.Name.toLowerCase().includes('pos') ||
+        p.Name.toLowerCase().includes('thermal') ||
+        p.Name.toLowerCase().includes('h-58') ||
+        p.Name.toLowerCase().includes('receipt')
     );
-    
+
     if (thermalPrinter) {
       console.log(`✅ Detected thermal printer: ${thermalPrinter.Name}`);
       return thermalPrinter.Name;
     }
-    
+
     console.log('⚠️  No thermal printer detected, will use default printer');
     return null;
   } catch (error) {
@@ -137,203 +137,71 @@ async function printUsingSystemPrinter(content) {
     // Create a temporary file with the content - Windows compatible
     const os = require('os');
     const path = require('path');
-    
-    // Use ASCII-safe temp directory to avoid encoding issues with Cyrillic usernames
-    let tempDir;
-    if (process.platform === 'win32') {
-      // Use C:\Temp or project directory to avoid username encoding issues
-      tempDir = 'C:\\Temp';
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-    } else {
-      tempDir = os.tmpdir();
-    }
-    
+    const tempDir = os.tmpdir();
     const tempFile = path.join(tempDir, 'thermal_receipt.txt');
-    
+
     // Use system print command based on OS
     let command;
     if (process.platform === 'win32') {
       // Windows: Write file with UTF-8 encoding
       fs.writeFileSync(tempFile, content, { encoding: 'utf8' });
-      
+
       // Detect printer if not already done
       if (!windowsPrinterName) {
         windowsPrinterName = detectWindowsThermalPrinter();
       }
-      
+
       const printerName = windowsPrinterName || 'default';
       console.log(`🖨️  Sending to printer: ${printerName}`);
-      
-      // Check printer status first
-      if (windowsPrinterName) {
-        try {
-          const statusCheck = execSync(`powershell -Command "Get-Printer -Name '${windowsPrinterName.replace(/'/g, "''")}' | Select-Object -ExpandProperty PrinterStatus"`, { encoding: 'utf8' }).trim();
-          console.log(`📊 Printer status: ${statusCheck}`);
-          
-          // Check if printer is offline, paused, or has errors
-          const stateCheck = execSync(`powershell -Command "$p = Get-Printer -Name '${windowsPrinterName.replace(/'/g, "''")}'; if ($p.PrinterStatus -ne 'Normal') { exit 1 }"`, { encoding: 'utf8' }).trim();
-        } catch (statusError) {
-          console.log('⚠️  Printer might be offline or paused. Attempting to print anyway...');
-        }
-      }
-      
-      // Create a PowerShell script that sends raw data directly to printer
+
+      // Create a PowerShell script that uses .NET to send raw data to printer
       const psScriptPath = path.join(tempDir, 'print_thermal.ps1');
-      const psScript = `# Raw printing for thermal POS printers
-\$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '\\"') : ''}"
-\$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
+      const psScript = `
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Printing
 
-Add-Type -TypeDefinition @"
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-
-public class RawPrinterHelper
-{
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public class DOCINFOA
-    {
-        [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
-        [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
-        [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
-    }
-
-    [DllImport("winspool.Drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool OpenPrinter([MarshalAs(UnmanagedType.LPStr)] string szPrinter, out IntPtr hPrinter, IntPtr pd);
-
-    [DllImport("winspool.Drv", EntryPoint = "ClosePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool ClosePrinter(IntPtr hPrinter);
-
-    [DllImport("winspool.Drv", EntryPoint = "StartDocPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool StartDocPrinter(IntPtr hPrinter, Int32 level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
-
-    [DllImport("winspool.Drv", EntryPoint = "EndDocPrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool EndDocPrinter(IntPtr hPrinter);
-
-    [DllImport("winspool.Drv", EntryPoint = "StartPagePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool StartPagePrinter(IntPtr hPrinter);
-
-    [DllImport("winspool.Drv", EntryPoint = "EndPagePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool EndPagePrinter(IntPtr hPrinter);
-
-    [DllImport("winspool.Drv", EntryPoint = "WritePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-    public static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBytes, Int32 dwCount, out Int32 dwWritten);
-
-    public static bool SendBytesToPrinter(string szPrinterName, IntPtr pBytes, Int32 dwCount)
-    {
-        IntPtr hPrinter = IntPtr.Zero;
-        DOCINFOA di = new DOCINFOA();
-        bool bSuccess = false;
-
-        di.pDocName = "Thermal Receipt";
-        di.pDataType = "RAW";
-
-        if (OpenPrinter(szPrinterName, out hPrinter, IntPtr.Zero))
-        {
-            if (StartDocPrinter(hPrinter, 1, di))
-            {
-                if (StartPagePrinter(hPrinter))
-                {
-                    int dwWritten = 0;
-                    bSuccess = WritePrinter(hPrinter, pBytes, dwCount, out dwWritten);
-                    EndPagePrinter(hPrinter);
-                }
-                EndDocPrinter(hPrinter);
-            }
-            ClosePrinter(hPrinter);
-        }
-
-        return bSuccess;
-    }
-
-    public static bool SendStringToPrinter(string szPrinterName, string szString)
-    {
-        IntPtr pBytes;
-        Int32 dwCount;
-        dwCount = szString.Length;
-        pBytes = Marshal.StringToCoTaskMemAnsi(szString);
-        bool result = SendBytesToPrinter(szPrinterName, pBytes, dwCount);
-        Marshal.FreeCoTaskMem(pBytes);
-        return result;
-    }
-}
-"@
+$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
+$content = [System.IO.File]::ReadAllText("${tempFile.replace(/\\/g, '\\\\')}", [System.Text.Encoding]::UTF8)
 
 try {
-    # Read content
-    \$content = [System.IO.File]::ReadAllText(\$tempFilePath, [System.Text.Encoding]::UTF8)
-    
-    if (\$printerName) {
-        # Send raw data to printer
-        \$success = [RawPrinterHelper]::SendStringToPrinter(\$printerName, \$content)
+    if ($printerName) {
+        # Try to print to specific printer
+        $printDoc = New-Object System.Drawing.Printing.PrintDocument
+        $printDoc.PrinterSettings.PrinterName = $printerName
         
-        if (\$success) {
-            Write-Host "Printed to \$printerName using raw method"
-        } else {
-            throw "Failed to send data to printer"
-        }
+        $printDoc.add_PrintPage({
+            param($sender, $ev)
+            $ev.Graphics.DrawString($content, (New-Object System.Drawing.Font("Courier New", 8)), [System.Drawing.Brushes]::Black, 0, 0)
+            $ev.HasMorePages = $false
+        })
+        
+        $printDoc.Print()
+        Write-Host "Printed to $printerName"
     } else {
-        throw "No printer specified"
+        # Use default printer
+        $printDoc = New-Object System.Drawing.Printing.PrintDocument
+        
+        $printDoc.add_PrintPage({
+            param($sender, $ev)
+            $ev.Graphics.DrawString($content, (New-Object System.Drawing.Font("Courier New", 8)), [System.Drawing.Brushes]::Black, 0, 0)
+            $ev.HasMorePages = $false
+        })
+        
+        $printDoc.Print()
+        Write-Host "Printed to default printer"
     }
 } catch {
-    Write-Error "Print error: \$(\$_.Exception.Message)"
+    Write-Error $_.Exception.Message
     exit 1
 }
 `;
-      
-      fs.writeFileSync(psScriptPath, psScript, { encoding: 'utf8' });
-      
-      // Try the raw printing method with fallback
-      try {
-        command = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`;
-        execSync(command, { encoding: 'utf8', stdio: 'pipe' });
-        console.log('✅ Printed successfully using raw printer method');
-      } catch (printError) {
-        console.log('⚠️  Raw printing failed, trying copy-to-printer method...');
-        console.log('   Error:', printError.message);
-        
-        // Fallback: Use copy command to send directly to printer port
-        try {
-          // Try to copy file directly to printer using copy command
-          const copyScript = `\$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '\\"') : ''}"
-\$tempFilePath = "${tempFile.replace(/\\/g, '\\\\')}"
 
-if (\$printerName) {
-    try {
-        # Method 1: Try using copy command to printer
-        \$printerPort = (Get-Printer -Name \$printerName).PortName
-        if (\$printerPort -and \$printerPort -like "USB*") {
-            # For USB printers, try direct copy
-            cmd /c copy /b "\$tempFilePath" "\\\\localhost\\\$printerName"
-            Write-Host "Printed using direct copy method"
-        } else {
-            # Method 2: Use Out-Printer as fallback
-            Get-Content "\$tempFilePath" -Raw | Out-Printer -Name \$printerName
-            Write-Host "Printed using Out-Printer method"
-        }
-    } catch {
-        Write-Error \$_.Exception.Message
-        exit 1
-    }
-} else {
-    Write-Error "No printer specified"
-    exit 1
-}
-`;
-          const copyPrintPath = path.join(tempDir, 'copy_print.ps1');
-          fs.writeFileSync(copyPrintPath, copyScript, { encoding: 'utf8' });
-          
-          execSync(`powershell -ExecutionPolicy Bypass -File "${copyPrintPath}"`, { encoding: 'utf8', stdio: 'pipe' });
-          console.log('✅ Printed successfully using copy-to-printer method');
-          fs.unlinkSync(copyPrintPath);
-        } catch (fallbackError) {
-          console.error('❌ Copy-to-printer method also failed:', fallbackError.message);
-          throw printError; // Throw original error
-        }
-      }
-      
+      fs.writeFileSync(psScriptPath, psScript, { encoding: 'utf8' });
+
+      // Execute the PowerShell script
+      command = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`;
+      execSync(command, { encoding: 'utf8' });
+
       // Clean up PowerShell script
       fs.unlinkSync(psScriptPath);
     } else {
@@ -347,7 +215,7 @@ if (\$printerName) {
     fs.unlinkSync(tempFile);
 
     console.log(
-      `✅ Printed using ${process.platform === 'win32' ? 'Windows' : 'macOS'} system printer with compact formatting`,
+        `✅ Printed using ${process.platform === 'win32' ? 'Windows' : 'macOS'} system printer with compact formatting`,
     );
     return true;
   } catch (error) {
@@ -359,10 +227,10 @@ if (\$printerName) {
 // Format currency for receipt
 function formatCurrency(amount) {
   return (
-    parseFloat(amount).toLocaleString("uz-UZ", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) + " UZS"
+      parseFloat(amount).toLocaleString("uz-UZ", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }) + " UZS"
   );
 }
 
@@ -420,9 +288,9 @@ function createReceiptContent(data) {
 
   data.payments.forEach((payment) => {
     const methodName =
-      payment.payment_method.length > 15
-        ? payment.payment_method.substring(0, 15) + "..."
-        : payment.payment_method;
+        payment.payment_method.length > 15
+            ? payment.payment_method.substring(0, 15) + "..."
+            : payment.payment_method;
 
     receipt += `${methodName}:\n`;
     receipt += `  Ожидается: ${formatCurrency(payment.expected)}\n`;
@@ -430,9 +298,9 @@ function createReceiptContent(data) {
 
     const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
     const diffStr =
-      diff >= 0
-        ? `+${formatCurrency(Math.abs(diff))}`
-        : `-${formatCurrency(Math.abs(diff))}`;
+        diff >= 0
+            ? `+${formatCurrency(Math.abs(diff))}`
+            : `-${formatCurrency(Math.abs(diff))}`;
     receipt += `  Разница: ${diffStr}\n`;
     receipt += "\n";
   });
@@ -493,7 +361,7 @@ app.post("/test-print", async (req, res) => {
     console.log("🖨️  Printing test receipt...");
 
     // Send immediate response to prevent frontend timeout
-    res.status(200).json({ 
+    res.status(200).json({
       message: "Test print initiated successfully.",
       status: "printing",
       timestamp: new Date().toISOString()
@@ -523,8 +391,8 @@ app.post("/test-print", async (req, res) => {
     try {
       const result = await Promise.race([
         printer.execute(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Print timeout')), 5000)
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Print timeout')), 5000)
         )
       ]);
       console.log("✅ Test receipt printed successfully");
@@ -566,7 +434,7 @@ app.post("/print-shift-closure", async (req, res) => {
     console.error("❌ Print request failed: No printer device found.");
     return res.status(500).json({
       error:
-        "Printer not found or not connected. Please check printer connection.",
+          "Printer not found or not connected. Please check printer connection.",
       printer_ready: isDeviceReady,
     });
   }
@@ -576,8 +444,8 @@ app.post("/print-shift-closure", async (req, res) => {
   // Validate required data
   if (!data || !data.id || !data.store || !data.payments) {
     return res
-      .status(400)
-      .json({ error: "Invalid shift closure data provided." });
+        .status(400)
+        .json({ error: "Invalid shift closure data provided." });
   }
 
   try {
@@ -627,7 +495,7 @@ app.post("/print-shift-closure", async (req, res) => {
     printer.bold(false);
     printer.println(`Продаж: ${data.total_sales_count}`);
     printer.println(
-      `Сумма продаж: ${formatCurrency(data.total_sales_amount)}`,
+        `Сумма продаж: ${formatCurrency(data.total_sales_amount)}`,
     );
     printer.println(`Сумма долгов: ${formatCurrency(data.total_debt_amount)}`);
     printer.drawLine();
@@ -644,13 +512,13 @@ app.post("/print-shift-closure", async (req, res) => {
     data.payments.forEach((payment) => {
       const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
       const diffStr =
-        diff >= 0
-          ? `+${Math.abs(diff).toFixed(2)}`
-          : `-${Math.abs(diff).toFixed(2)}`;
+          diff >= 0
+              ? `+${Math.abs(diff).toFixed(2)}`
+              : `-${Math.abs(diff).toFixed(2)}`;
 
       printer.println(`${payment.payment_method}:`);
       printer.println(
-        `  Ожидается: ${parseFloat(payment.expected).toFixed(2)}`,
+          `  Ожидается: ${parseFloat(payment.expected).toFixed(2)}`,
       );
       printer.println(`  Фактически: ${parseFloat(payment.actual).toFixed(2)}`);
       printer.println(`  Разница: ${diffStr}`);
@@ -659,11 +527,11 @@ app.post("/print-shift-closure", async (req, res) => {
 
     // Totals
     const totalDiff =
-      parseFloat(data.total_actual) - parseFloat(data.total_expected);
+        parseFloat(data.total_actual) - parseFloat(data.total_expected);
     const totalDiffStr =
-      totalDiff >= 0
-        ? `+${Math.abs(totalDiff).toFixed(2)}`
-        : `-${Math.abs(totalDiff).toFixed(2)}`;
+        totalDiff >= 0
+            ? `+${Math.abs(totalDiff).toFixed(2)}`
+            : `-${Math.abs(totalDiff).toFixed(2)}`;
 
     printer.drawLine();
     printer.alignCenter();
@@ -674,17 +542,17 @@ app.post("/print-shift-closure", async (req, res) => {
     printer.setTextNormal();
     printer.alignLeft();
     printer.println(
-      `Всего ожидается: ${parseFloat(data.total_expected).toFixed(2)}`,
+        `Всего ожидается: ${parseFloat(data.total_expected).toFixed(2)}`,
     );
     printer.println(
-      `Всего фактически: ${parseFloat(data.total_actual).toFixed(2)}`,
+        `Всего фактически: ${parseFloat(data.total_actual).toFixed(2)}`,
     );
     printer.bold(true);
     printer.println(
-      `Возврат сумма: ${parseFloat(data.total_returns_amount).toFixed(2)}`,
+        `Возврат сумма: ${parseFloat(data.total_returns_amount).toFixed(2)}`,
     );
     printer.println(
-      `Сумма долгов: ${formatCurrency(data.total_debt_amount)}`,
+        `Сумма долгов: ${formatCurrency(data.total_debt_amount)}`,
     );
     printer.bold(false);
     printer.bold(false);
@@ -724,7 +592,7 @@ app.post("/print-shift-closure", async (req, res) => {
     } catch (executeError) {
       console.error("❌ Execute error:", executeError);
       console.log(
-        "🔄 Trying macOS system printer fallback for shift closure...",
+          "🔄 Trying macOS system printer fallback for shift closure...",
       );
 
       try {
@@ -748,18 +616,18 @@ app.post("/print-shift-closure", async (req, res) => {
 --------------------------------
 СПОСОБЫ ОПЛАТЫ:
 ${data.payments
-  .map((payment) => {
-    const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
-    const diffStr =
-      diff >= 0
-        ? `+${Math.abs(diff).toFixed(2)}`
-        : `-${Math.abs(diff).toFixed(2)}`;
-    return `${payment.payment_method}:
+            .map((payment) => {
+              const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
+              const diffStr =
+                  diff >= 0
+                      ? `+${Math.abs(diff).toFixed(2)}`
+                      : `-${Math.abs(diff).toFixed(2)}`;
+              return `${payment.payment_method}:
  Ожидается: ${parseFloat(payment.expected).toFixed(2)}
  Фактически: ${parseFloat(payment.actual).toFixed(2)}
  Разница: ${diffStr}`;
-  })
-  .join("\n")}
+            })
+            .join("\n")}
 --------------------------------
 ИТОГИ:
 Всего ожидается: ${parseFloat(data.total_expected).toFixed(2)}
@@ -777,7 +645,7 @@ ${new Date().toLocaleString("ru-RU")}
         await printUsingSystemPrinter(textContent);
         res.status(200).json({
           message:
-            "Shift closure receipt printed successfully via macOS system printer",
+              "Shift closure receipt printed successfully via macOS system printer",
           shift_id: data.id,
           method: "system_printer",
           timestamp: new Date().toISOString(),
@@ -787,7 +655,7 @@ ${new Date().toLocaleString("ru-RU")}
         const buffer = printer.getBuffer();
         res.status(200).json({
           message:
-            "Print data prepared (printer may not be physically connected)",
+              "Print data prepared (printer may not be physically connected)",
           shift_id: data.id,
           buffer_size: buffer.length,
           method: "buffer_only",
@@ -804,18 +672,18 @@ ${new Date().toLocaleString("ru-RU")}
 // Helper function to replace template variables
 function replaceTemplateVariables(text, saleData) {
   const totalPaid =
-    saleData.sale_payments?.reduce((sum, p) => sum + parseFloat(p.amount), 0) ||
-    0;
+      saleData.sale_payments?.reduce((sum, p) => sum + parseFloat(p.amount), 0) ||
+      0;
   const totalAmount = parseFloat(saleData.total_amount);
   const change = Math.max(0, totalPaid - totalAmount);
 
   const paymentsText =
-    saleData.sale_payments
-      ?.map(
-        (p) =>
-          `${p.payment_method}: ${parseFloat(p.amount).toLocaleString("ru-RU")} UZS`,
-      )
-      .join("\n") || "";
+      saleData.sale_payments
+          ?.map(
+              (p) =>
+                  `${p.payment_method}: ${parseFloat(p.amount).toLocaleString("ru-RU")} UZS`,
+          )
+          .join("\n") || "";
 
   const replacements = {
     "{{storePhone}}": saleData.store_read?.phone_number || "",
@@ -827,7 +695,7 @@ function replaceTemplateVariables(text, saleData) {
     "{{time}}": new Date(saleData.sold_date).toLocaleTimeString("ru-RU"),
     "{{cashierName}}": saleData.worker_read?.name || "",
     "{{paymentMethod}}":
-      saleData.sale_payments?.map((p) => p.payment_method).join(", ") || "",
+        saleData.sale_payments?.map((p) => p.payment_method).join(", ") || "",
     "{{change}}": change.toLocaleString("ru-RU"),
     "{{returnAmount}}": change.toLocaleString("ru-RU"),
     "{{footerText}}": "Спасибо за покупку!",
@@ -838,8 +706,8 @@ function replaceTemplateVariables(text, saleData) {
   let result = text;
   for (const [key, value] of Object.entries(replacements)) {
     result = result.replace(
-      new RegExp(key.replace(/[{}]/g, "\\$&"), "g"),
-      value,
+        new RegExp(key.replace(/[{}]/g, "\\$&"), "g"),
+        value,
     );
   }
   return result;
@@ -865,29 +733,13 @@ function applyFontWeight(printer, weight) {
   }
 }
 
-// Helper function to format numbers without unnecessary decimals
-// Examples: 1.000 -> "1", 1.12 -> "1.12", 1.5 -> "1.5"
-function formatNumber(num) {
-  const parsed = parseFloat(num);
-  if (isNaN(parsed)) return '0';
-  
-  // Check if the number is a whole number
-  if (parsed % 1 === 0) {
-    return parsed.toString(); // Return without decimals (e.g., "1")
-  }
-  
-  // Return with decimals, removing only trailing zeros after decimal point
-  // This will keep "1.12" as "1.12" but turn "1.50" into "1.5" and "1.00" into "1"
-  return parsed.toFixed(3).replace(/\.?0+$/, '');
-}
-
 // Sale receipt printing endpoint with template support
 app.post("/print-sale-receipt", async (req, res) => {
   if (!isDeviceReady || !printer) {
     console.error("❌ Print request failed: No printer device found.");
     return res.status(500).json({
       error:
-        "Printer not found or not connected. Please check printer connection.",
+          "Printer not found or not connected. Please check printer connection.",
       printer_ready: isDeviceReady,
     });
   }
@@ -896,10 +748,10 @@ app.post("/print-sale-receipt", async (req, res) => {
 
   // Validate required data
   if (
-    !saleData ||
-    !saleData.id ||
-    !saleData.store_read ||
-    !saleData.sale_items
+      !saleData ||
+      !saleData.id ||
+      !saleData.store_read ||
+      !saleData.sale_items
   ) {
     return res.status(400).json({ error: "Invalid sale data provided." });
   }
@@ -919,13 +771,13 @@ app.post("/print-sale-receipt", async (req, res) => {
 
     // Sort components by order and filter enabled ones
     const components = template.style.components
-      .filter((c) => c.enabled)
-      .sort((a, b) => a.order - b.order);
+        .filter((c) => c.enabled)
+        .sort((a, b) => a.order - b.order);
 
     console.log(`📦 Processing ${components.length} enabled components:`);
     components.forEach((c, i) => {
       console.log(
-        `  ${i + 1}. [${c.type}] id="${c.id}" order=${c.order} enabled=${c.enabled}`,
+          `  ${i + 1}. [${c.type}] id="${c.id}" order=${c.order} enabled=${c.enabled}`,
       );
       if (c.type === "text" || c.type === "footer") {
         console.log(`     text: "${c.data?.text}"`);
@@ -936,7 +788,7 @@ app.post("/print-sale-receipt", async (req, res) => {
     for (const component of components) {
       const compStyles = component.styles || {};
       console.log(
-        `\n🔧 Processing component: ${component.type} (${component.id})`,
+          `\n🔧 Processing component: ${component.type} (${component.id})`,
       );
 
       switch (component.type) {
@@ -955,13 +807,13 @@ app.post("/print-sale-receipt", async (req, res) => {
           if (component.data?.text) {
             const originalText = component.data.text;
             const text = replaceTemplateVariables(
-              component.data.text,
-              saleData,
+                component.data.text,
+                saleData,
             );
             console.log(`  ➜ Original text: "${originalText}"`);
             console.log(`  ➜ Replaced text: "${text}"`);
             console.log(
-              `  ➜ Align: ${compStyles.textAlign || "left"}, Bold: ${compStyles.fontWeight === "bold"}`,
+                `  ➜ Align: ${compStyles.textAlign || "left"}, Bold: ${compStyles.fontWeight === "bold"}`,
             );
 
             applyAlignment(printer, compStyles.textAlign || "left");
@@ -980,7 +832,7 @@ app.post("/print-sale-receipt", async (req, res) => {
 
         case "divider":
           console.log(
-            `  ➜ Printing divider (borderTop: ${compStyles.borderTop})`,
+              `  ➜ Printing divider (borderTop: ${compStyles.borderTop})`,
           );
           if (compStyles.borderTop) {
             printer.drawLine();
@@ -991,27 +843,19 @@ app.post("/print-sale-receipt", async (req, res) => {
 
         case "itemList":
           console.log(`  ➜ Printing ${saleData.sale_items.length} items`);
-          const itemListBold = compStyles.fontWeight === "bold";
+          applyFontWeight(printer, compStyles.fontWeight);
 
           saleData.sale_items.forEach((item, index) => {
             const unitName =
-              item.product_read.available_units?.find(
-                (u) => u.id === item.selling_unit,
-              )?.short_name || "шт";
+                item.product_read.available_units?.find(
+                    (u) => u.id === item.selling_unit,
+                )?.short_name || "шт";
 
             const price = parseFloat(item.subtotal) / parseFloat(item.quantity);
-            const formattedQty = formatNumber(item.quantity);
-            const formattedPrice = formatNumber(price);
-            const formattedSubtotal = formatNumber(item.subtotal);
 
-            // Product name is always bold for emphasis
-            printer.bold(true);
             printer.println(`${index + 1}. ${item.product_read.product_name}`);
-            
-            // Quantity/price line uses component style
-            printer.bold(itemListBold);
             printer.println(
-              `   ${formattedQty} ${unitName} x ${formattedPrice} = ${formattedSubtotal}`,
+                `   ${item.quantity} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}`,
             );
           });
 
@@ -1020,7 +864,7 @@ app.post("/print-sale-receipt", async (req, res) => {
 
         case "paymentList":
           console.log(
-            `  ➜ Printing ${saleData.sale_payments?.length || 0} payment methods`,
+              `  ➜ Printing ${saleData.sale_payments?.length || 0} payment methods`,
           );
           applyFontWeight(printer, compStyles.fontWeight);
           applyAlignment(printer, compStyles.textAlign || "left");
@@ -1028,7 +872,7 @@ app.post("/print-sale-receipt", async (req, res) => {
           if (saleData.sale_payments && saleData.sale_payments.length > 0) {
             saleData.sale_payments.forEach((payment) => {
               printer.println(
-                `${payment.payment_method}: ${formatCurrency(payment.amount)}`,
+                  `${payment.payment_method}: ${formatCurrency(payment.amount)}`,
               );
             });
           }
@@ -1074,7 +918,7 @@ app.post("/print-sale-receipt", async (req, res) => {
     } catch (executeError) {
       console.error("❌ Execute error:", executeError);
       console.log(
-        "🔄 Trying macOS system printer fallback for sale receipt...",
+          "🔄 Trying macOS system printer fallback for sale receipt...",
       );
 
       try {
@@ -1083,8 +927,8 @@ app.post("/print-sale-receipt", async (req, res) => {
 
         // Process each component from template
         const sortedComponents = components
-          .filter((c) => c.enabled)
-          .sort((a, b) => a.order - b.order);
+            .filter((c) => c.enabled)
+            .sort((a, b) => a.order - b.order);
 
         for (const component of sortedComponents) {
           switch (component.type) {
@@ -1098,15 +942,10 @@ app.post("/print-sale-receipt", async (req, res) => {
             case "footer":
               if (component.data?.text) {
                 const text = replaceTemplateVariables(
-                  component.data.text,
-                  saleData,
+                    component.data.text,
+                    saleData,
                 );
-                // Add bold markers for system printer if component is bold
-                if (component.styles?.fontWeight === "bold") {
-                  textContent += `**${text}**\n`;
-                } else {
-                  textContent += text + "\n";
-                }
+                textContent += text + "\n";
               }
               break;
 
@@ -1121,17 +960,13 @@ app.post("/print-sale-receipt", async (req, res) => {
             case "itemList":
               saleData.sale_items.forEach((item, index) => {
                 const unitName =
-                  item.product_read.available_units?.find(
-                    (u) => u.id === item.selling_unit,
-                  )?.short_name || "шт";
+                    item.product_read.available_units?.find(
+                        (u) => u.id === item.selling_unit,
+                    )?.short_name || "шт";
                 const price =
-                  parseFloat(item.subtotal) / parseFloat(item.quantity);
-                const formattedQty = formatNumber(item.quantity);
-                const formattedPrice = formatNumber(price);
-                const formattedSubtotal = formatNumber(item.subtotal);
-                // Mark bold items with ** for system printer
-                textContent += `**${index + 1}. ${item.product_read.product_name}**\n`;
-                textContent += `   ${formattedQty} ${unitName} x ${formattedPrice} = ${formattedSubtotal}\n`;
+                    parseFloat(item.subtotal) / parseFloat(item.quantity);
+                textContent += `${index + 1}. ${item.product_read.product_name}\n`;
+                textContent += `   ${item.quantity} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}\n`;
               });
               break;
 
@@ -1144,8 +979,8 @@ app.post("/print-sale-receipt", async (req, res) => {
               break;
 
             case "totals":
-              // Mark totals as bold for system printer
-              textContent += `**ИТОГО: ${formatCurrency(saleData.total_amount)}**\n`;
+
+              textContent += `ИТОГО: ${formatCurrency(saleData.total_amount)}\n`;
               break;
           }
         }
@@ -1153,7 +988,7 @@ app.post("/print-sale-receipt", async (req, res) => {
         textContent += "\n\n";
 
         console.log(
-          "📄 Generated text content from template for system printer",
+            "📄 Generated text content from template for system printer",
         );
         await printUsingSystemPrinter(textContent);
         res.status(200).json({
@@ -1167,7 +1002,7 @@ app.post("/print-sale-receipt", async (req, res) => {
         const buffer = printer.getBuffer();
         res.status(200).json({
           message:
-            "Print data prepared (printer may not be physically connected)",
+              "Print data prepared (printer may not be physically connected)",
           sale_id: saleData.id,
           buffer_size: buffer.length,
           method: "buffer_only",
@@ -1187,7 +1022,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     console.error("❌ Print request failed: No printer device found.");
     return res.status(500).json({
       error:
-        "Printer not found or not connected. Please check printer connection.",
+          "Printer not found or not connected. Please check printer connection.",
       printer_ready: isDeviceReady,
     });
   }
@@ -1261,7 +1096,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
       },
       {
         id: 378,
-          payment_method: "Карта",
+        payment_method: "Карта",
         income: "113000.00",
         expense: "0.00",
         expected: "113000.00",
@@ -1334,11 +1169,11 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.bold(false);
     printer.println(`Продаж (кол-во): ${testData.total_sales_count}`);
     printer.println(
-      `Сумма продаж: ${formatCurrency(testData.total_sales_amount)}`,
+        `Сумма продаж: ${formatCurrency(testData.total_sales_amount)}`,
     );
     printer.println(`Возвратов (кол-во): ${testData.total_returns_count}`);
     printer.println(
-      `Сумма возвратов: ${formatCurrency(testData.total_returns_amount)}`,
+        `Сумма возвратов: ${formatCurrency(testData.total_returns_amount)}`,
     );
     printer.println(`Долги: ${formatCurrency(testData.total_debt_amount)}`);
     printer.println(`Доходы: ${formatCurrency(testData.total_income)}`);
@@ -1357,13 +1192,13 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     testData.payments.forEach((payment) => {
       const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
       const diffStr =
-        diff >= 0
-          ? `+${Math.abs(diff).toFixed(2)}`
-          : `-${Math.abs(diff).toFixed(2)}`;
+          diff >= 0
+              ? `+${Math.abs(diff).toFixed(2)}`
+              : `-${Math.abs(diff).toFixed(2)}`;
 
       printer.println(`${payment.payment_method}:`);
       printer.println(
-        `  Ожидается: ${parseFloat(payment.expected).toFixed(2)}`,
+          `  Ожидается: ${parseFloat(payment.expected).toFixed(2)}`,
       );
       printer.println(`  Фактически: ${parseFloat(payment.actual).toFixed(2)}`);
       printer.println(`  Разница: ${diffStr}`);
@@ -1372,11 +1207,11 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
 
     // Totals
     const totalDiff =
-      parseFloat(testData.total_actual) - parseFloat(testData.total_expected);
+        parseFloat(testData.total_actual) - parseFloat(testData.total_expected);
     const totalDiffStr =
-      totalDiff >= 0
-        ? `+${Math.abs(totalDiff).toFixed(2)}`
-        : `-${Math.abs(totalDiff).toFixed(2)}`;
+        totalDiff >= 0
+            ? `+${Math.abs(totalDiff).toFixed(2)}`
+            : `-${Math.abs(totalDiff).toFixed(2)}`;
 
     printer.drawLine();
     printer.alignCenter();
@@ -1387,10 +1222,10 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.setTextNormal();
     printer.alignLeft();
     printer.println(
-      `Всего ожидается: ${parseFloat(testData.total_expected).toFixed(2)}`,
+        `Всего ожидается: ${parseFloat(testData.total_expected).toFixed(2)}`,
     );
     printer.println(
-      `Всего фактически: ${parseFloat(testData.total_actual).toFixed(2)}`,
+        `Всего фактически: ${parseFloat(testData.total_actual).toFixed(2)}`,
     );
     printer.drawLine();
 
@@ -1400,7 +1235,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.bold(false);
     printer.println(`Активна: ${testData.is_active ? "Да" : "Нет"}`);
     printer.println(
-      `Ожидает подтверждения: ${testData.is_awaiting_approval ? "Да" : "Нет"}`,
+        `Ожидает подтверждения: ${testData.is_awaiting_approval ? "Да" : "Нет"}`,
     );
     printer.println(`Подтверждена: ${testData.is_approved ? "Да" : "Нет"}`);
     if (testData.approved_by) {
@@ -1476,18 +1311,18 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
 --------------------------------
 СПОСОБЫ ОПЛАТЫ:
 ${testData.payments
-  .map((payment) => {
-    const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
-    const diffStr =
-      diff >= 0
-        ? `+${Math.abs(diff).toFixed(2)}`
-        : `-${Math.abs(diff).toFixed(2)}`;
-    return `${payment.payment_method}:
+            .map((payment) => {
+              const diff = parseFloat(payment.actual) - parseFloat(payment.expected);
+              const diffStr =
+                  diff >= 0
+                      ? `+${Math.abs(diff).toFixed(2)}`
+                      : `-${Math.abs(diff).toFixed(2)}`;
+              return `${payment.payment_method}:
  Ожидается: ${parseFloat(payment.expected).toFixed(2)}
  Фактически: ${parseFloat(payment.actual).toFixed(2)}
  Разница: ${diffStr}`;
-  })
-  .join("\n")}
+            })
+            .join("\n")}
 --------------------------------
 ИТОГИ:
 Всего ожидается: ${parseFloat(testData.total_expected).toFixed(2)}
@@ -1499,15 +1334,15 @@ ${testData.payments
 Активна: ${testData.is_active ? "Да" : "Нет"}
 Ожидает подтверждения: ${testData.is_awaiting_approval ? "Да" : "Нет"}
 Подтверждена: ${testData.is_approved ? "Да" : "Нет"}${
-          testData.approved_by
-            ? `
+            testData.approved_by
+                ? `
 Подтвердил: ${testData.approved_by}`
-            : ""
+                : ""
         }${
-          testData.approval_comment
-            ? `
+            testData.approval_comment
+                ? `
 Комментарий одобрения: ${testData.approval_comment}`
-            : ""
+                : ""
         }
 ================================
 ${testData.opening_comment ? `Комментарий открытия:\n${testData.opening_comment}\n--------------------------------\n` : ""}${testData.closing_comment ? `Комментарий закрытия:\n${testData.closing_comment}\n--------------------------------\n` : ""}
@@ -1529,7 +1364,7 @@ ${new Date().toLocaleString("ru-RU")}
         const buffer = printer.getBuffer();
         res.status(200).json({
           message:
-            "Test print data prepared (printer may not be physically connected)",
+              "Test print data prepared (printer may not be physically connected)",
           shift_id: testData.id,
           buffer_size: buffer.length,
           method: "buffer_only",
@@ -1551,14 +1386,14 @@ app.listen(port, () => {
   console.log("🚀 Thermal Print Service Started");
   console.log(`📡 Server listening at http://localhost:${port}`);
   console.log(
-    `🖨️  Printer Status: ${isDeviceReady ? "✅ Ready" : "❌ Not Ready"}`,
+      `🖨️  Printer Status: ${isDeviceReady ? "✅ Ready" : "❌ Not Ready"}`,
   );
   console.log("📋 Available endpoints:");
   console.log("   GET  /health - Check service status");
   console.log("   POST /test-print - Print test receipt");
   console.log("   POST /print-shift-closure - Print shift closure receipt");
   console.log(
-    "   POST /test-shift-closure-with-data - Test with specific JSON data",
+      "   POST /test-shift-closure-with-data - Test with specific JSON data",
   );
   console.log("   POST /print-sale-receipt - Print sale receipt");
   console.log("🔄 Waiting for print requests...");
